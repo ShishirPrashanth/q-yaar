@@ -26,3 +26,26 @@ Connect to DB from command line using psql
 ```bash
 psql -d postgres://q_yaar_user:q_yaar_password@localhost:5434/q_yaar_db # Use the applicable port number
 ```
+
+## ***Formatting***
+Use black (already mentioned in requirements.txt)
+Make sure the line length arg is set to 119 (it defaults to 80 if nothing is set)
+
+* For VScode, add the below configs to your settings.json file
+
+```
+{
+	"python.pythonPath": "<your_python_interpreter_path>",
+	"python.linting.enabled": true,
+	"python.linting.pylintEnabled": false,
+	"python.linting.flake8Enabled": true,
+	"python.languageServer": "Pylance",
+	"python.formatting.provider": "black",
+	"python.linting.flake8Args": [
+		"--max-line-length=119"
+	],
+	"python.formatting.blackArgs": [
+		"--line-length=119"
+	]
+}
+```
