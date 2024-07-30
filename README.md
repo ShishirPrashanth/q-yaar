@@ -28,6 +28,41 @@ Connect to DB from command line using psql
 psql -d postgres://q_yaar_user:q_yaar_password@localhost:5434/q_yaar_db # Use the applicable port number
 ```
 
+### Create a Virtual Environment
+Make sure you're in the directory - q-yaar
+```bash
+$ python3 -m venv .venv  # This will create a virtual environment
+$ source .venv/bin/activate  # You can see the virtual environment is active
+$ cd q_yaar_platform
+$ pip install -r requirements-dev.txt # This will install all the requirements
+```
+
+### Run the Django Server
+Make sure you're in the directory - q_yaar_platform
+```bash
+$ touch .env
+```
+Now copy and paste the contents available in the file - env_example
+Ask someone for the actual env values
+
+```bash
+$ python manage.py migrate
+$ python manage.py runserver
+```
+You should see your server running on __127.0.0.1:8000__ 
+
+### Create a Superuser to get Admin Access
+Make sure you're in the directory - q_yaar_platform
+```bash
+$ python manage.py createsuperuser
+```
+Follow the instructions on the screen to create a superuser.
+
+### Try logging into admin
+Open the following url in your browser - __127.0.0.1:8000/admin/__
+Login using the username and password entered during superuser creation
+You can now access all the models through django admin
+
 ## ***Formatting***
 Use black (already mentioned in requirements.txt)
 Make sure the line length arg is set to 119 (it defaults to 80 if nothing is set)
