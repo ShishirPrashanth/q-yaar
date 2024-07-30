@@ -2,6 +2,7 @@
 Get out to play.
 
 ## ***Project Specs***
+* Ubuntu 22.04 (Preferred)
 * Python - 3.11.9
 * Django - 5.0.7
 * Postgres - 16.3
