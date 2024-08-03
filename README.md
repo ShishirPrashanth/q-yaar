@@ -71,17 +71,27 @@ Make sure the line length arg is set to 119 (it defaults to 80 if nothing is set
 
 ```
 {
-	"python.pythonPath": "<your_python_interpreter_path>",
-	"python.linting.enabled": true,
-	"python.linting.pylintEnabled": false,
-	"python.linting.flake8Enabled": true,
-	"python.languageServer": "Pylance",
-	"python.formatting.provider": "black",
-	"python.linting.flake8Args": [
-		"--max-line-length=119"
-	],
-	"python.formatting.blackArgs": [
-		"--line-length=119"
-	]
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.languageServer": "Pylance",
+    "python.formatting.provider": "black",
+    "python.linting.flake8Args": [
+        "--max-line-length=119"
+    ],
+    "python.formatting.blackArgs": [
+        "--line-length=119"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "black-formatter.args": [
+        "--line-length",
+        "119"
+    ],
+    "python.autoComplete.extraPaths": [],
+    "python.analysis.extraPaths": [
+        "q_yaar_platform"
+    ]
 }
 ```
