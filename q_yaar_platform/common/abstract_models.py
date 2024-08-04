@@ -36,3 +36,16 @@ class AbstractTimeStamped(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AbstractVersioned(models.Model):
+    """
+    Implemented by models that require versioning.
+    Provides is_deleted and version number fields
+    """
+
+    is_deleted = models.BooleanField(default=False)
+    version = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        abstract = True
