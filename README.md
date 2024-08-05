@@ -54,6 +54,11 @@ Make sure you're in the directory - docker
 $ sudo docker-compose -f docker-compose-dev.yml up -d redisearch
 ```
 
+If you want to stop the Redis server
+```bash
+$ sudo docker-compose -f docker-compose-dev.yml down
+```
+
 ### Run the Django Server
 Make sure you're in the directory - q_yaar_platform
 
