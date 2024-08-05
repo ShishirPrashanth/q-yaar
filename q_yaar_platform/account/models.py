@@ -54,6 +54,18 @@ class PlatformUser(AbstractBaseUser, AbstractExternalFacing, AbstractTimeStamped
     def __str__(self):  # pragma: no cover
         return self.email
 
+    class Meta:
+        indexes = [models.Index(fields=["email"]), models.Index(fields=["external_id"])]
+
+    @classmethod
+    def create(cls, *, email: str, phone: str = None) -> "PlatformUser":
+        platform_user = cls(email=email)
+        if phone:
+            platform_user.phone = phone
+
+        platform_user.save()
+        return platform_user
+
     def get_phone(self) -> str:
         return self.phone
 
