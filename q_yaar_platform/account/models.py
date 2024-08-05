@@ -54,6 +54,12 @@ class PlatformUser(AbstractBaseUser, AbstractExternalFacing, AbstractTimeStamped
     def __str__(self):  # pragma: no cover
         return self.email
 
+    def get_phone(self) -> str:
+        return self.phone
+
+    def get_email(self) -> str:
+        return self.email
+
     # TODO: What is the use of these methods ?
     def has_perm(self, perm, obj=None):  # pragma: no cover
         """Does the user have a specific permission?"""

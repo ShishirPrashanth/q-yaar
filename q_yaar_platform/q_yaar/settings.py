@@ -13,12 +13,22 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import dj_database_url
 
 from decouple import config
+from kombu import Queue, Exchange
 from pathlib import Path
 
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+#######################################################################################################################
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+IS_PROD = config("IS_PROD", default=True, cast=bool)
+IS_PREPROD = config("IS_PREPROD", default=False, cast=bool) and (not IS_PROD)
+IS_LOCAL = config("IS_LOCAL", default=False, cast=bool)
 
 
 # Quick-start development settings - unsuitable for production
@@ -55,7 +65,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",  # Django Simple JWT
 ]
 
-PROJECT_APPS = ["account.apps.AccountConfig"]
+PROJECT_APPS = ["account.apps.AccountConfig", "profile_player.apps.ProfilePlayerConfig"]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
@@ -116,6 +126,19 @@ DATABASES = {
 
 #######################################################################################################################
 
+# Cache
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": config("REDIS_URL"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "KEY_PREFIX": "qyaar.api",
+    }
+}
+
+#######################################################################################################################
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -166,3 +189,39 @@ REST_FRAMEWORK = {
 
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=30)}
+
+#######################################################################################################################
+
+# Celery
+
+CELERY_QUEUES = (
+    # Slow Queues
+    Queue("default", Exchange("default"), routing_key="default"),
+    # Fast Queues
+    Queue("example", Exchange("example"), routing_key="example"),
+)
+
+CELERY_DEFAULT_QUEUE = "default"
+CELERY_DEFAULT_EXCHANGE = "default"
+CELERY_DEFAULT_ROUTING_KEY = "default"
+
+CELERY_BROKER_URL = config("REDIS_URL")
+# Enable this, along with celerybackend in 3rd party apps if required
+CELERY_IGNORE_RESULT = True
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERYD_TASK_SOFT_TIME_LIMIT = 60
+if IS_LOCAL and DEBUG:  # For local and unit tests
+    CELERY_TASK_ALWAYS_EAGER = True
+
+if IS_PREPROD:
+    CELERY_REDIS_MAX_CONNECTIONS = 30
+    BROKER_POOL_LIMIT = 15
+else:
+    CELERY_REDIS_MAX_CONNECTIONS = 50
+    BROKER_POOL_LIMIT = 20
+
+BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 86400}  # 1 day
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"

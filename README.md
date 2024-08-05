@@ -6,6 +6,9 @@ Get out to play.
 * Python - 3.11.9
 * Django - 5.0.7
 * Postgres - 16.3
+* Docker - Follow the [link](https://docs.docker.com/get-docker/)
+* Docker Compose - Follow the [link](https://docs.docker.com/compose/install/)
+* Redis
 
 ## ***Setup on Local***
 
@@ -37,13 +40,22 @@ $ cd q_yaar_platform
 $ pip install -r requirements-dev.txt # This will install all the requirements
 ```
 
-### Run the Django Server
+### Setup .env File
 Make sure you're in the directory - q_yaar_platform
 ```bash
 $ touch .env
 ```
 Now copy and paste the contents available in the file - env_example <br />
 Ask someone for the actual env values
+
+### Setup Docker and Start Redis Server
+Make sure you're in the directory - docker
+```bash
+$ sudo docker-compose -f docker-compose-dev.yml up -d redisearch
+```
+
+### Run the Django Server
+Make sure you're in the directory - q_yaar_platform
 
 ```bash
 $ python manage.py migrate
