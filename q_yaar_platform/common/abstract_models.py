@@ -4,8 +4,10 @@ Base behaviours. Can be inherited by other models.
 
 from uuid import UUID
 
+from django.conf import settings
 from django.db import models
 
+from common.constants import Length
 from common.uuid import unique_uuid4
 
 
@@ -49,3 +51,49 @@ class AbstractVersioned(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AbstractUserProfile(models.Model):
+    """
+    Implemented by specialized profile for base user
+    Provides-
+    1. OneToOne to platform_user
+    2. profile_pic
+    """
+
+    # The OneToOneField constraint means, we are expecting the future
+    # services to have profile and user in same service and DB
+    platform_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field="external_id")
+    profile_pic = models.JSONField(default=dict)
+    profile_name = models.CharField(max_length=Length.USER_NAME, blank=True, null=False)
+    is_suspended = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    def get_external_id(self) -> UUID:
+        return self.platform_user.external_id
+
+    def get_profile_name(self) -> str:
+        return self.profile_name
+
+    def get_phone(self) -> str:
+        return self.platform_user.get_phone()
+
+    def get_email(self) -> str:
+        return self.platform_user.get_email()
+
+    def get_profile_pic(self):
+        return self.profile_pic
+
+    def set_profile_pic(self, profile_pic: dict, save=False):
+        self.profile_pic = profile_pic
+        if save:
+            self.save()
+        return self
+
+    def set_profile_name(self, profile_name: str, save=False):
+        self.profile_name = profile_name
+        if save:
+            self.save()
+        return self
