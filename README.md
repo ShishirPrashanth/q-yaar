@@ -42,7 +42,7 @@ Make sure you're in the directory - q_yaar_platform
 ```bash
 $ touch .env
 ```
-Now copy and paste the contents available in the file - env_example
+Now copy and paste the contents available in the file - env_example <br />
 Ask someone for the actual env values
 
 ```bash
@@ -56,16 +56,16 @@ Make sure you're in the directory - q_yaar_platform
 ```bash
 $ python manage.py createsuperuser
 ```
-Follow the instructions on the screen to create a superuser
+Follow the instructions on the screen to create a superuser <br />
 Ensure that you enter a valid uuid during superuser creation
 
 ### Try logging into admin
-Open the following url in your browser - __127.0.0.1:8000/admin/__
-Login using the username and password entered during superuser creation
+Open the following url in your browser - __127.0.0.1:8000/admin/__ <br />
+Login using the username and password entered during superuser creation <br />
 You can now access all the models through django admin
 
 ## ***Formatting***
-Use black (already mentioned in requirements.txt)
+Use black (already mentioned in requirements.txt) <br />
 Make sure the line length arg is set to 119 (it defaults to 80 if nothing is set)
 
 * For VScode, add the below configs to your settings.json file
