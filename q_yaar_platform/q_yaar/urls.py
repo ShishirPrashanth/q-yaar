@@ -14,9 +14,21 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path
 
+from .forms import CustomAdminAuthenticationForm
+
+admin.autodiscover()
+
+admin.site.site_header = "Q Yaar Admin"
+admin.site.site_title = "Q Yaar Admin"
+admin.site.index_title = "Welcome to Q Yaar Admin Portal"
+admin.site.enable_nav_sidebar = False
+# To work with UUID based login
+admin.site.login_form = CustomAdminAuthenticationForm
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 ]

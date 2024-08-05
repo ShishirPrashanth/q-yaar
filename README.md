@@ -56,7 +56,8 @@ Make sure you're in the directory - q_yaar_platform
 ```bash
 $ python manage.py createsuperuser
 ```
-Follow the instructions on the screen to create a superuser.
+Follow the instructions on the screen to create a superuser
+Ensure that you enter a valid uuid during superuser creation
 
 ### Try logging into admin
 Open the following url in your browser - __127.0.0.1:8000/admin/__
