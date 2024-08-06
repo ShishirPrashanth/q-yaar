@@ -1,48 +1,48 @@
 version: '3'
 
 services:
-  web_monolith:
+  q_yaar_core:
     restart: always
     build: ./../q_yaar_platform
     ports:
       - "8000:8000"
     depends_on:
-      - redisearch
-      - db
+      - q_yaar_redisearch
+      - q_yaar_db
     networks:
       - backend
     env_file: ./../q_yaar_platform/.env
     command: gunicorn q_yaar.wsgi:application -w 4 -b :8000
 
-  fast_worker:
+  q_yaar_fast_worker:
     build: ./../q_yaar_platform
     command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n fast_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
-      - redisearch
+      - q_yaar_redisearch
     networks:
       - backend
 
-  slow_worker:
+  q_yaar_slow_worker:
     build: ./../q_yaar_platform
     command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n slow_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
-      - redisearch
+      - q_yaar_redisearch
     networks:
       - backend
 
-  celery-beat:
+  q_yaar_celery_beat:
     build: ./../q_yaar_platform
     command: celery -A esamudaay_platform beat -l debug
     env_file: ./../q_yaar_platform/.env
     depends_on:
-      - redisearch
-      - db
+      - q_yaar_redisearch
+      - q_yaar_db
     networks:
       - backend
 
-  db:
+  q_yaar_db:
     image: postgres
     expose:
       - "5434"
@@ -55,15 +55,17 @@ services:
     networks:
       - backend
 
-  redisearch:
+  q_yaar_redisearch:
     image: redislabs/redisearch:latest
     ports:
-      - "6379:6379"
+      - "6380:6380"
     volumes:
       - ./redis:/data
     command:
       [
         "redis-server",
+        "--port",
+        "6380",
         "--loadmodule",
         "/usr/lib/redis/modules/redisearch.so",
         "--appendonly",

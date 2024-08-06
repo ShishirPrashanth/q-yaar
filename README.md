@@ -51,7 +51,7 @@ Ask someone for the actual env values
 ### Setup Docker and Start Redis Server
 Make sure you're in the directory - docker
 ```bash
-$ sudo docker-compose -f docker-compose-dev.yml up -d redisearch
+$ sudo docker-compose -f docker-compose-dev.yml up -d q_yaar_redisearch
 ```
 
 If you want to stop the Redis server
