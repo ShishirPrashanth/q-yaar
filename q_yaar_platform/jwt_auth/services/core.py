@@ -1,11 +1,15 @@
 import logging
 
+from account.models import PlatformUser
+
 from .error_codes import ErrorCode
 from .helper import (
     svc_auth_helper_check_account_is_active,
     svc_auth_helper_check_password_for_user,
     svc_auth_helper_check_user_exists,
     svc_auth_helper_create_new_user,
+    svc_auth_helper_create_profile_for_user,
+    svc_auth_helper_get_all_serialized_roles_for_user,
     svc_auth_helper_get_serialized_jwt_token,
     svc_auth_helper_get_serialized_platform_user,
     svc_auth_helper_get_serialized_refresh_token,
@@ -13,10 +17,12 @@ from .helper import (
     svc_auth_helper_get_token_and_user_for_token_refresh,
     svc_auth_helper_get_user_token_for_platform_user,
     svc_auth_helper_run_validations_to_check_user_exists,
+    svc_auth_helper_run_validations_to_create_profile,
     svc_auth_helper_run_validations_to_create_user,
     svc_auth_helper_run_validations_to_get_token,
     svc_auth_helper_run_validations_to_refresh_token,
     svc_auth_helper_validate_and_get_phone_number,
+    svc_auth_helper_validate_and_get_role,
     svc_auth_helper_validate_and_get_user_by_id,
     svc_auth_helper_validate_and_get_user_from_email,
 )
@@ -115,3 +121,34 @@ def svc_auth_refresh_token(request_data: dict, serialized: bool = True):
     )
 
     return ErrorCode(ErrorCode.SUCCESS), response
+
+
+def svc_auth_get_all_profiles_for_user(platform_user: PlatformUser):
+    logger.debug(f">> ARGS: {locals()}")
+
+    profiles = svc_auth_helper_get_all_serialized_roles_for_user(platform_user=platform_user)
+
+    return ErrorCode(ErrorCode.SUCCESS), profiles
+
+
+def svc_auth_create_profile_for_user(request_data: dict, platform_user: PlatformUser):
+    logger.debug(f">> ARGS: {locals()}")
+
+    error = svc_auth_helper_run_validations_to_create_profile(request_data=request_data)
+    if error:
+        return error, None
+
+    error, role = svc_auth_helper_validate_and_get_role(request_data["role"])
+    if error:
+        return error, None
+
+    error, serialized_profile = svc_auth_helper_create_profile_for_user(
+        platform_user=platform_user,
+        role=role,
+        profile_name=request_data["profile_name"],
+        profile_pic=request_data.get("profile_pic", {}),
+    )
+    if error:
+        return error, None
+
+    return ErrorCode(ErrorCode.CREATED), serialized_profile

@@ -1,5 +1,7 @@
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
+from account.models import PlatformUser
+
 
 class JWTAccessToken(AccessToken):
     def __init__(self, *args, **kwargs):
@@ -8,7 +10,7 @@ class JWTAccessToken(AccessToken):
         self["role"] = role
 
     @classmethod
-    def for_user(cls, user, role=None):
+    def for_user(cls, user: PlatformUser, role: str = None):
         token = super().for_user(user)
         # Add custom claims based on user object
         token["email"] = user.email
@@ -26,7 +28,7 @@ class JWTRefreshToken(RefreshToken):
         self["role"] = role
 
     @classmethod
-    def for_user(cls, user, role=None):
+    def for_user(cls, user: PlatformUser, role: str = None):
         token = super().for_user(user)
         # Add custom claims based on user object
         token["email"] = user.email

@@ -37,6 +37,7 @@ class Length:
 class ModuleErrorPrefix:
     JWT_AUTH = "AUTH"
     ACCOUNT = "ACC"
+    PROFILE_PLAYER = "PLYR"
 
 
 class UserRolesType(BaseIntEnum):

@@ -5,12 +5,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 
-from common.decorators import validate_user
+from common.decorators import validate_profile
 from common.permissions import ActivePermission
 from common.response import get_standard_response
 from jwt_auth.services.core import (
     svc_auth_check_user_exists,
     svc_auth_create_new_user,
+    svc_auth_create_profile_for_user,
+    svc_auth_get_all_profiles_for_user,
     svc_auth_refresh_token,
     svc_auth_verify_password_and_get_token,
 )
@@ -61,6 +63,11 @@ class ProfileView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, ActivePermission)
     authentication_classes = (JWTAuthentication,)
 
-    @validate_user(logger=logger)
+    @validate_profile(logger=logger, allowed_roles=[])
     def get(self, request, **kwargs):
-        return Response({"user_id": kwargs.get("user_id")}, 200)
+        error, response = svc_auth_get_all_profiles_for_user(platform_user=request.user)
+        return get_standard_response(error, response)
+
+    def post(self, request, **kwargs):
+        error, response = svc_auth_create_profile_for_user(request_data=request.data, platform_user=request.user)
+        return get_standard_response(error, response)

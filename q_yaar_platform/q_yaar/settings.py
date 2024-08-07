@@ -138,6 +138,8 @@ CACHES = {
     }
 }
 
+LAST_LOGIN_CACHE_TTL = 24 * 60 * 60  # (24 hours)
+
 #######################################################################################################################
 
 # Password validation
@@ -259,11 +261,21 @@ APPLICATION_LOGGERS_DEFAULT_LEVEL = "DEBUG"
 APPLICATION_LOGGERS_DEFAULT_HANDLERS = ["console"]
 
 APPLICATION_LOGGERS = {
+    "account": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
     "jwt_auth": {
         "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
         "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
         "propagate": False,
-    }
+    },
+    "profile_player": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
 }
 
 DJANGO_DEFAULT_LOGGERS = {

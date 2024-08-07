@@ -17,8 +17,9 @@ class ErrorCode(BaseErrorCode):
     INVALID_EMAIL = "006"
     MISSING_TOKEN = "007"
     MISSING_USER_ID = "008"
-    TOKEN_REFRESH_FAILED = "009"
-    INVALID_JWT_TOKEN = "010"
+    INVALID_JWT_TOKEN = "009"
+    MISSING_ROLE = "010"
+    MISSING_PROFILE_NAME = "011"
 
     # Permission Errors - 1 Series
     ACCOUNT_DEACTIVATED = "101"
@@ -27,12 +28,11 @@ class ErrorCode(BaseErrorCode):
     INVALID_PASSWORD = "104"
 
     # Key Errors - 2 Series
+    INVALID_ROLE = "201"
 
     # Object Does Not Exist Errors - 3 series
-    USER_WITH_EMAIL_DOES_NOT_EXIST = "301"
 
     # Integrity Errors - 4 Series
-    USER_WITH_EMAIL_ALREADY_EXISTS = "401"
 
     ERROR_CODE_HTTP_MAP = {
         MISSING_EMAIL: status.HTTP_400_BAD_REQUEST,
@@ -43,14 +43,14 @@ class ErrorCode(BaseErrorCode):
         INVALID_EMAIL: status.HTTP_400_BAD_REQUEST,
         MISSING_TOKEN: status.HTTP_400_BAD_REQUEST,
         MISSING_USER_ID: status.HTTP_400_BAD_REQUEST,
-        TOKEN_REFRESH_FAILED: status.HTTP_400_BAD_REQUEST,
         ACCOUNT_DEACTIVATED: status.HTTP_403_FORBIDDEN,
         INVALID_JWT_TOKEN: status.HTTP_401_UNAUTHORIZED,
+        MISSING_ROLE: status.HTTP_400_BAD_REQUEST,
+        MISSING_PROFILE_NAME: status.HTTP_400_BAD_REQUEST,
         ACCOUNT_SUSPENDED: status.HTTP_403_FORBIDDEN,
         ACCOUNT_DELETED: status.HTTP_403_FORBIDDEN,
         INVALID_PASSWORD: status.HTTP_401_UNAUTHORIZED,
-        USER_WITH_EMAIL_DOES_NOT_EXIST: status.HTTP_400_BAD_REQUEST,
-        USER_WITH_EMAIL_ALREADY_EXISTS: status.HTTP_400_BAD_REQUEST,
+        INVALID_ROLE: status.HTTP_400_BAD_REQUEST,
     }
 
     def get_string_for_missing_email(kwargs: dict):
@@ -77,11 +77,14 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_missing_user_id(kwargs: dict):
         return "Missing user_id"
 
-    def get_string_for_token_refresh_failed(kwargs: dict):
-        return f"Token refresh failed with error - {kwargs.get('error')}"
-
     def get_string_for_invalid_jwt_token(kwargs: dict):
         return f"Error decoding token - {kwargs.get('error')}"
+
+    def get_string_for_missing_role(kwargs: dict):
+        return "Missing role"
+
+    def get_string_for_missing_profile_name(kwargs: dict):
+        return "Missing profile_name"
 
     def get_string_for_account_deactivated(kwargs: dict):
         return "Account not active"
@@ -95,11 +98,8 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_invalid_password(kwargs: dict):
         return "Incorrect password"
 
-    def get_string_for_user_with_email_does_not_exist(kwargs: dict):
-        return f"User with email - {kwargs.get('email')} does not exist. Signup instead."
-
-    def get_string_for_user_with_email_already_exists(kwargs: dict):
-        return f"User with email - {kwargs.get('email')} already exists. Login instead."
+    def get_string_for_invalid_role(kwargs: dict):
+        return f"Invalid role - {kwargs.get('role')}"
 
     CODE_MESSAGE_MAP = {
         MISSING_EMAIL: get_string_for_missing_email,
@@ -110,14 +110,14 @@ class ErrorCode(BaseErrorCode):
         INVALID_EMAIL: get_string_for_invalid_email,
         MISSING_TOKEN: get_string_for_missing_token,
         MISSING_USER_ID: get_string_for_missing_user_id,
-        TOKEN_REFRESH_FAILED: get_string_for_token_refresh_failed,
         ACCOUNT_DEACTIVATED: get_string_for_account_deactivated,
         INVALID_JWT_TOKEN: get_string_for_invalid_jwt_token,
+        MISSING_ROLE: get_string_for_missing_role,
+        MISSING_PROFILE_NAME: get_string_for_missing_profile_name,
         ACCOUNT_SUSPENDED: get_string_for_account_suspended,
         ACCOUNT_DELETED: get_string_for_account_deleted,
         INVALID_PASSWORD: get_string_for_invalid_password,
-        USER_WITH_EMAIL_DOES_NOT_EXIST: get_string_for_user_with_email_does_not_exist,
-        USER_WITH_EMAIL_ALREADY_EXISTS: get_string_for_user_with_email_already_exists,
+        INVALID_ROLE: get_string_for_invalid_role,
     }
 
     def __init__(self, code, **kwargs) -> None:
