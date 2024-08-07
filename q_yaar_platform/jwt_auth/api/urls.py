@@ -5,6 +5,8 @@ from . import views
 app_name = "jwt_auth"
 
 urlpatterns = [
+    # POST - Refresh token
+    path(r"token/refresh", views.TokenRefreshView.as_view(), name="handler-token"),
     # POST - Verify password and get token
     path(r"token", views.TokenView.as_view(), name="handler-token"),
     # POST - Verify password and get token

@@ -188,11 +188,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
 }
 
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=30)}
-
-TOKEN_EXPIRY_DAYS = 30
-JWT_ALGORITHM = "HS256"
+JWT_AUTH = {
+    "JWT_ALLOW_REFRESH": True,
+    "JWT_EXPIRATION_DELTA": timedelta(days=90),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=180),
+    "JWT_INITIAL_EXPIRATION_DELTA": timedelta(hours=2),
+}
 
 #######################################################################################################################
 

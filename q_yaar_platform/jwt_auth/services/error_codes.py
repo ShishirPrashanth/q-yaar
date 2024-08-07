@@ -15,6 +15,9 @@ class ErrorCode(BaseErrorCode):
     PASSWORDS_DO_NOT_MATCH = "004"
     INVALID_PHONE = "005"
     INVALID_EMAIL = "006"
+    MISSING_TOKEN = "007"
+    MISSING_USER_ID = "008"
+    TOKEN_REFRESH_FAILED = "009"
 
     # Permission Errors - 1 Series
     ACCOUNT_DEACTIVATED = "101"
@@ -37,6 +40,9 @@ class ErrorCode(BaseErrorCode):
         PASSWORDS_DO_NOT_MATCH: status.HTTP_400_BAD_REQUEST,
         INVALID_PHONE: status.HTTP_400_BAD_REQUEST,
         INVALID_EMAIL: status.HTTP_400_BAD_REQUEST,
+        MISSING_TOKEN: status.HTTP_400_BAD_REQUEST,
+        MISSING_USER_ID: status.HTTP_400_BAD_REQUEST,
+        TOKEN_REFRESH_FAILED: status.HTTP_400_BAD_REQUEST,
         ACCOUNT_DEACTIVATED: status.HTTP_403_FORBIDDEN,
         ACCOUNT_SUSPENDED: status.HTTP_403_FORBIDDEN,
         ACCOUNT_DELETED: status.HTTP_403_FORBIDDEN,
@@ -63,6 +69,15 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_invalid_email(kwargs: dict):
         return f"Invalid email id - {kwargs.get('email')}"
 
+    def get_string_for_missing_token(kwargs: dict):
+        return "Missing token"
+
+    def get_string_for_missing_user_id(kwargs: dict):
+        return "Missing user_id"
+
+    def get_string_for_token_refresh_failed(kwargs: dict):
+        return f"Token refresh failed with error - {kwargs.get('error')}"
+
     def get_string_for_account_deactivated(kwargs: dict):
         return "Account not active"
 
@@ -88,6 +103,9 @@ class ErrorCode(BaseErrorCode):
         PASSWORDS_DO_NOT_MATCH: get_string_for_passwords_do_not_match,
         INVALID_PHONE: get_string_for_invalid_phone,
         INVALID_EMAIL: get_string_for_invalid_email,
+        MISSING_TOKEN: get_string_for_missing_token,
+        MISSING_USER_ID: get_string_for_missing_user_id,
+        TOKEN_REFRESH_FAILED: get_string_for_token_refresh_failed,
         ACCOUNT_DEACTIVATED: get_string_for_account_deactivated,
         ACCOUNT_SUSPENDED: get_string_for_account_suspended,
         ACCOUNT_DELETED: get_string_for_account_deleted,

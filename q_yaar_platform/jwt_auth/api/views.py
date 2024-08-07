@@ -7,6 +7,7 @@ from common.response import get_standard_response
 from jwt_auth.services.core import (
     svc_auth_check_user_exists,
     svc_auth_create_new_user,
+    svc_auth_refresh_token,
     svc_auth_verify_password_and_get_token,
 )
 
@@ -20,6 +21,15 @@ class TokenView(generics.GenericAPIView):
         Verify password and get JWT token
         """
         error, response = svc_auth_verify_password_and_get_token(request_data=request.data)
+        return get_standard_response(error, response)
+
+
+class TokenRefreshView(generics.GenericAPIView):
+    logger = logging.getLogger(__name__ + ".TokenRefreshView")
+    permission_classes = (AllowAny,)
+
+    def post(self, request, **kwargs):
+        error, response = svc_auth_refresh_token(request_data=request.data)
         return get_standard_response(error, response)
 
 
