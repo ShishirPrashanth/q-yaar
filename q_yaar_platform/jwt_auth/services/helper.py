@@ -141,6 +141,15 @@ def svc_auth_helper_run_validations_to_create_profile(request_data: dict):
     return None
 
 
+def svc_auth_helper_run_validations_to_update_password(request_data: dict):
+    logger.debug(">>")  # Not logging locals since password will get logged
+
+    if not request_data.get("password"):
+        return ErrorCode(ErrorCode.MISSING_PASSWORD)
+
+    return None
+
+
 def svc_auth_helper_validate_and_get_user_from_email(email: str):
     logger.debug(f">> ARGS: {locals()}")
 
@@ -322,3 +331,12 @@ def svc_auth_helper_update_profile(
     ROLE_UPDATE_TYPE_MAP = {UserRolesType.PLAYER: svc_player_update_player}
 
     return ROLE_UPDATE_TYPE_MAP[role](profile=profile, request_data=request_data, serialized=serialized)
+
+
+def svc_auth_helper_update_password(platform_user: PlatformUser, password: str):
+    logger.debug(">>")  # Not logging locals since password will get logged
+
+    platform_user.set_password(password)
+    platform_user.save()
+
+    return platform_user

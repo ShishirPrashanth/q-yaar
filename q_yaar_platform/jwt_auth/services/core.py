@@ -23,6 +23,8 @@ from .helper import (
     svc_auth_helper_run_validations_to_create_user,
     svc_auth_helper_run_validations_to_get_token,
     svc_auth_helper_run_validations_to_refresh_token,
+    svc_auth_helper_run_validations_to_update_password,
+    svc_auth_helper_update_password,
     svc_auth_helper_update_profile,
     svc_auth_helper_validate_and_get_phone_number,
     svc_auth_helper_validate_and_get_role,
@@ -165,3 +167,15 @@ def svc_auth_update_profile(request_data: dict, profile: PlayerProfile, role: Us
     )
 
     return ErrorCode(ErrorCode.SUCCESS), response
+
+
+def svc_auth_update_password(platform_user: PlatformUser, request_data: dict):
+    logger.debug(">>")  # Not logging locals since password will get logged
+
+    error = svc_auth_helper_run_validations_to_update_password(request_data=request_data)
+    if error:
+        return error, None
+
+    platform_user = svc_auth_helper_update_password(platform_user=platform_user, password=request_data["password"])
+
+    return ErrorCode(ErrorCode.NO_CONTENT), None

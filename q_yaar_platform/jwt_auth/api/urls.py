@@ -16,4 +16,6 @@ urlpatterns = [
     # POST - Create new profile
     # PATCH - Update profile
     path(r"profiles", views.ProfileView.as_view(), name="handler-profile"),
+    # PATCH - Update password
+    path(r"password", views.PasswordView.as_view(), name="handler-password"),
 ]
