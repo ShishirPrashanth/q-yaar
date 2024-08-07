@@ -28,7 +28,7 @@ def validate_profile(logger, allowed_roles: list[UserRolesType] = []):
                 return Response({"detail": "Invalid token passed"}, status=status.HTTP_401_UNAUTHORIZED)
 
             user = request.user
-            role = decoded_token.get("role")
+            role = UserRolesType.tokentype_from_string(decoded_token.get("role"))
 
             error, profile = svc_auth_get_profile_for_user_and_role(platform_user=user, role=role)
             if error:

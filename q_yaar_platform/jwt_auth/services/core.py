@@ -1,6 +1,8 @@
 import logging
 
 from account.models import PlatformUser
+from common.constants import UserRolesType
+from profile_player.models import PlayerProfile
 
 from .error_codes import ErrorCode
 from .helper import (
@@ -21,6 +23,7 @@ from .helper import (
     svc_auth_helper_run_validations_to_create_user,
     svc_auth_helper_run_validations_to_get_token,
     svc_auth_helper_run_validations_to_refresh_token,
+    svc_auth_helper_update_profile,
     svc_auth_helper_validate_and_get_phone_number,
     svc_auth_helper_validate_and_get_role,
     svc_auth_helper_validate_and_get_user_by_id,
@@ -152,3 +155,13 @@ def svc_auth_create_profile_for_user(request_data: dict, platform_user: Platform
         return error, None
 
     return ErrorCode(ErrorCode.CREATED), serialized_profile
+
+
+def svc_auth_update_profile(request_data: dict, profile: PlayerProfile, role: UserRolesType, serialized: bool = True):
+    logger.debug(f">> ARGS: {locals()}")
+
+    response = svc_auth_helper_update_profile(
+        request_data=request_data, profile=profile, role=role, serialized=serialized
+    )
+
+    return ErrorCode(ErrorCode.SUCCESS), response

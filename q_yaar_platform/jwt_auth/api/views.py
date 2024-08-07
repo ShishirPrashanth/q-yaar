@@ -14,6 +14,7 @@ from jwt_auth.services.core import (
     svc_auth_create_profile_for_user,
     svc_auth_get_all_profiles_for_user,
     svc_auth_refresh_token,
+    svc_auth_update_profile,
     svc_auth_verify_password_and_get_token,
 )
 
@@ -68,6 +69,14 @@ class ProfileView(generics.GenericAPIView):
         error, response = svc_auth_get_all_profiles_for_user(platform_user=request.user)
         return get_standard_response(error, response)
 
+    @validate_profile(logger=logger, allowed_roles=[])
     def post(self, request, **kwargs):
         error, response = svc_auth_create_profile_for_user(request_data=request.data, platform_user=request.user)
+        return get_standard_response(error, response)
+
+    @validate_profile(logger=logger, allowed_roles=[])
+    def patch(self, request, **kwargs):
+        error, response = svc_auth_update_profile(
+            request_data=request.data, profile=kwargs["profile"], role=kwargs["role"]
+        )
         return get_standard_response(error, response)

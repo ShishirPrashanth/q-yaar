@@ -27,9 +27,7 @@ def svc_player_helper_get_serialized_player(player: PlayerProfile):
     return PlayerProfileSerializer(player, many=False).data
 
 
-def svc_player_helper_create_player(
-    platform_user: PlatformUser, profile_name: str, profile_pic: dict = {}, serialized: bool = False
-):
+def svc_player_helper_create_player(platform_user: PlatformUser, profile_name: str, profile_pic: dict = {}):
     logger.debug(f">> ARGS: {locals()}")
 
     try:
@@ -37,7 +35,17 @@ def svc_player_helper_create_player(
     except IntegrityError:
         return ErrorCode(ErrorCode.PLAYER_ALREADY_ONBOARDED, user_id=str(platform_user.get_external_id())), None
 
-    if serialized:
-        player = svc_player_helper_get_serialized_player(player=player)
-
     return None, player
+
+
+def svc_player_helper_update_player(player: PlayerProfile, request_data: dict):
+    logger.debug(f">> ARGS: {locals()}")
+
+    if request_data.get("profile_name"):
+        player.set_profile_name(request_data["profile_name"])
+
+    if request_data.get("profile_pic"):
+        player.set_profile_pic(profile_pic=request_data["profile_pic"])
+
+    player.save()
+    return player

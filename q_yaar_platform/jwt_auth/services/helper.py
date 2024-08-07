@@ -17,10 +17,12 @@ from account.services.interfacer import (
 from common.constants import UserRolesType
 from common.phonenumber import is_valid_indian_number
 from jwt_auth.authentication import JWTRefreshToken
+from profile_player.models import PlayerProfile
 from profile_player.services.interfacer import (
     svc_player_create_player_for_platform_user,
     svc_player_get_player_for_platform_user,
     svc_player_get_serialized_player_profile,
+    svc_player_update_player,
 )
 
 from .error_codes import ErrorCode
@@ -310,3 +312,13 @@ def svc_auth_helper_get_profile_for_user_and_role(platform_user: PlatformUser, r
     ROLE_GET_MAP = {UserRolesType.PLAYER: svc_player_get_player_for_platform_user}
 
     return ROLE_GET_MAP[role](platform_user=platform_user)
+
+
+def svc_auth_helper_update_profile(
+    request_data: dict, profile: PlayerProfile, role: UserRolesType, serialized: bool = True
+):
+    logger.debug(f">> ARGS: {locals()}")
+
+    ROLE_UPDATE_TYPE_MAP = {UserRolesType.PLAYER: svc_player_update_player}
+
+    return ROLE_UPDATE_TYPE_MAP[role](profile=profile, request_data=request_data, serialized=serialized)
