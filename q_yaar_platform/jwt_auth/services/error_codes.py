@@ -18,6 +18,7 @@ class ErrorCode(BaseErrorCode):
     MISSING_TOKEN = "007"
     MISSING_USER_ID = "008"
     TOKEN_REFRESH_FAILED = "009"
+    INVALID_JWT_TOKEN = "010"
 
     # Permission Errors - 1 Series
     ACCOUNT_DEACTIVATED = "101"
@@ -44,6 +45,7 @@ class ErrorCode(BaseErrorCode):
         MISSING_USER_ID: status.HTTP_400_BAD_REQUEST,
         TOKEN_REFRESH_FAILED: status.HTTP_400_BAD_REQUEST,
         ACCOUNT_DEACTIVATED: status.HTTP_403_FORBIDDEN,
+        INVALID_JWT_TOKEN: status.HTTP_401_UNAUTHORIZED,
         ACCOUNT_SUSPENDED: status.HTTP_403_FORBIDDEN,
         ACCOUNT_DELETED: status.HTTP_403_FORBIDDEN,
         INVALID_PASSWORD: status.HTTP_401_UNAUTHORIZED,
@@ -78,6 +80,9 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_token_refresh_failed(kwargs: dict):
         return f"Token refresh failed with error - {kwargs.get('error')}"
 
+    def get_string_for_invalid_jwt_token(kwargs: dict):
+        return f"Error decoding token - {kwargs.get('error')}"
+
     def get_string_for_account_deactivated(kwargs: dict):
         return "Account not active"
 
@@ -107,6 +112,7 @@ class ErrorCode(BaseErrorCode):
         MISSING_USER_ID: get_string_for_missing_user_id,
         TOKEN_REFRESH_FAILED: get_string_for_token_refresh_failed,
         ACCOUNT_DEACTIVATED: get_string_for_account_deactivated,
+        INVALID_JWT_TOKEN: get_string_for_invalid_jwt_token,
         ACCOUNT_SUSPENDED: get_string_for_account_suspended,
         ACCOUNT_DELETED: get_string_for_account_deleted,
         INVALID_PASSWORD: get_string_for_invalid_password,

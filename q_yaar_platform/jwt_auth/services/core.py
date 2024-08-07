@@ -25,7 +25,7 @@ from .helper import (
 logger = logging.getLogger(__name__)
 
 
-def svc_auth_verify_password_and_get_token(request_data: dict, serialized: bool = True):
+def svc_auth_verify_password_and_get_token(request_data: dict):
     logger.debug(">>")  # Not logging locals since password will get logged
 
     error = svc_auth_helper_run_validations_to_get_token(request_data=request_data)
@@ -44,12 +44,13 @@ def svc_auth_verify_password_and_get_token(request_data: dict, serialized: bool 
     if error:
         return error, None
 
-    token = svc_auth_helper_get_user_token_for_platform_user(platform_user=platform_user)
+    access_token, refresh_token = svc_auth_helper_get_user_token_for_platform_user(platform_user=platform_user)
 
-    if serialized:
-        token = svc_auth_helper_get_serialized_jwt_token(jwt_token=token, platform_user=platform_user)
+    response = svc_auth_helper_get_serialized_jwt_token(
+        access_token=access_token, refresh_token=refresh_token, platform_user=platform_user
+    )
 
-    return ErrorCode(ErrorCode.SUCCESS), token
+    return ErrorCode(ErrorCode.SUCCESS), response
 
 
 def svc_auth_create_new_user(request_data: dict, serialized: bool = True):
@@ -103,13 +104,14 @@ def svc_auth_refresh_token(request_data: dict, serialized: bool = True):
     if error:
         return error, None
 
-    error, token, platform_user = svc_auth_helper_get_token_and_user_for_token_refresh(
-        jwt_token=request_data["token"], platform_user=platform_user
+    error, acccess_token, refresh_token = svc_auth_helper_get_token_and_user_for_token_refresh(
+        refresh_token=request_data["refresh_token"], platform_user=platform_user
     )
     if error:
         return error, None
 
-    if serialized:
-        token = svc_auth_helper_get_serialized_refresh_token(jwt_token=token, platform_user=platform_user)
+    response = svc_auth_helper_get_serialized_refresh_token(
+        access_token=acccess_token, refresh_token=refresh_token, platform_user=platform_user
+    )
 
-    return ErrorCode(ErrorCode.SUCCESS), token
+    return ErrorCode(ErrorCode.SUCCESS), response

@@ -1,3 +1,5 @@
+from django.conf import settings
+import jwt
 import logging
 import uuid
 
@@ -13,8 +15,7 @@ from account.services.interfacer import (
     svc_account_get_serialized_platform_user,
 )
 from common.phonenumber import is_valid_indian_number
-from jwt_auth.authentication import RefreshJSONWebToken
-from jwt_auth.settings import api_settings
+from jwt_auth.authentication import JWTRefreshToken
 
 from .error_codes import ErrorCode
 
@@ -93,7 +94,7 @@ def svc_auth_helper_run_validations_to_check_user_exists(request_data: dict):
 def svc_auth_helper_run_validations_to_refresh_token(request_data: dict):
     logger.debug(f">> ARGS: {locals()}")
 
-    if not request_data.get("token"):
+    if not request_data.get("refresh_token"):
         return ErrorCode(ErrorCode.MISSING_TOKEN)
 
     if not request_data.get("user_id"):
@@ -141,18 +142,20 @@ def svc_auth_helper_check_password_for_user(platform_user: PlatformUser, passwor
 def svc_auth_helper_get_user_token_for_platform_user(platform_user: PlatformUser):
     logger.debug(f">> ARGS: {locals()}")
 
-    jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-    jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-    payload = jwt_payload_handler(platform_user, None, platform_user.is_suspended, None)
-    jwt_token = jwt_encode_handler(payload)
+    refresh_token = JWTRefreshToken.for_user(user=platform_user)
+    access_token = refresh_token.access_token
 
-    return jwt_token
+    return str(access_token), str(refresh_token)
 
 
-def svc_auth_helper_get_serialized_jwt_token(jwt_token: str, platform_user: PlatformUser):
+def svc_auth_helper_get_serialized_jwt_token(access_token, refresh_token: str, platform_user: PlatformUser):
     logger.debug(f">> ARGS: {locals()}")
 
-    return {"token": jwt_token, "user": svc_account_get_serialized_platform_user(platform_user=platform_user)}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": svc_account_get_serialized_platform_user(platform_user=platform_user),
+    }
 
 
 def svc_auth_helper_validate_and_get_phone_number(phone: str):
@@ -190,21 +193,32 @@ def svc_auth_helper_get_serialized_user_exists(user_exists: bool):
     return {"user_exists": user_exists}
 
 
-def svc_auth_helper_get_token_and_user_for_token_refresh(jwt_token: str, platform_user: PlatformUser):
+def svc_auth_helper_get_token_and_user_for_token_refresh(refresh_token: str, platform_user: PlatformUser):
     logger.debug(f">> ARGS: {locals()}")
 
     try:
-        jwt_token, user = RefreshJSONWebToken().validate_and_refresh_token(token=jwt_token, user=platform_user)
-    except ValueError as e:
-        return ErrorCode(ErrorCode.TOKEN_REFRESH_FAILED, error=str(e)), None, None
+        decoded_token = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=["HS256"])
+    except jwt.DecodeError:
+        return ErrorCode(ErrorCode.INVALID_JWT_TOKEN, error="Invalid JWT token"), None, None
+    except jwt.ExpiredSignatureError:
+        return ErrorCode(ErrorCode.INVALID_JWT_TOKEN, error="Token expired"), None, None
+    except jwt.InvalidTokenError:
+        return ErrorCode(ErrorCode.INVALID_JWT_TOKEN, error="Invalid JWT token"), None, None
 
-    return None, jwt_token, user
+    if platform_user.email != decoded_token.get("email"):
+        return ErrorCode(ErrorCode.INVALID_JWT_TOKEN, error="Token does not belong to user"), None, None
+
+    access_token, refresh_token = svc_auth_helper_get_user_token_for_platform_user(platform_user=platform_user)
+
+    return None, access_token, refresh_token
 
 
-def svc_auth_helper_get_serialized_refresh_token(jwt_token: str, platform_user: PlatformUser):
+def svc_auth_helper_get_serialized_refresh_token(access_token: str, refresh_token: str, platform_user: PlatformUser):
     logger.debug(f">> ARGS: {locals()}")
 
     return {
-        "user": svc_auth_helper_get_serialized_jwt_token(jwt_token=jwt_token, platform_user=platform_user),
+        "user": svc_auth_helper_get_serialized_jwt_token(
+            access_token=access_token, refresh_token=refresh_token, platform_user=platform_user
+        ),
         # "profile": svc_profile_get_token_info_all_profiles(user),
     }

@@ -1,8 +1,12 @@
 import logging
 
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.response import Response
 
+from common.decorators import validate_user
+from common.permissions import ActivePermission
 from common.response import get_standard_response
 from jwt_auth.services.core import (
     svc_auth_check_user_exists,
@@ -50,3 +54,13 @@ class UserView(generics.GenericAPIView):
         """
         error, response = svc_auth_check_user_exists(request_data=request.query_params)
         return get_standard_response(error, response)
+
+
+class ProfileView(generics.GenericAPIView):
+    logger = logging.getLogger(__name__ + ".ProfileView")
+    permission_classes = (IsAuthenticated, ActivePermission)
+    authentication_classes = (JWTAuthentication,)
+
+    @validate_user(logger=logger)
+    def get(self, request, **kwargs):
+        return Response({"user_id": kwargs.get("user_id")}, 200)

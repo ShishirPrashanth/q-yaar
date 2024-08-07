@@ -12,4 +12,8 @@ urlpatterns = [
     # POST - Verify password and get token
     # GET - Check if user exists
     path(r"user", views.UserView.as_view(), name="handler-user"),
+    # GET - Get profiles for user
+    # POST - Create new profile
+    # PATCH - Update profile
+    path(r"profiles", views.ProfileView.as_view(), name="handler-profile"),
 ]
