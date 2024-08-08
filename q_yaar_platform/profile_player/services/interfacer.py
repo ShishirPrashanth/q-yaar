@@ -3,6 +3,7 @@ import logging
 from account.models import PlatformUser
 from profile_player.models import PlayerProfile
 from .helper import (
+    svc_player_helper_check_if_player_with_email_exists,
     svc_player_helper_create_player,
     svc_player_helper_get_player_for_platform_user,
     svc_player_helper_get_serialized_player,
@@ -51,3 +52,7 @@ def svc_player_update_player(profile: PlayerProfile, request_data: dict, seriali
         profile = svc_player_helper_get_serialized_player(player=profile)
 
     return profile
+
+
+def svc_player_check_if_player_with_email_exists(email: str):
+    return svc_player_helper_check_if_player_with_email_exists(email=email)

@@ -9,7 +9,7 @@ from django.core.validators import validate_email
 from account.models import PlatformUser
 from account.services.interfacer import (
     svc_account_check_if_user_with_email_exists,
-    svc_account_create_platform_user,
+    svc_account_get_or_create_platform_user,
     svc_account_get_platform_user_by_email,
     svc_account_get_platform_user_by_id,
     svc_account_get_serialized_platform_user,
@@ -19,6 +19,7 @@ from common.phonenumber import is_valid_indian_number
 from jwt_auth.authentication import JWTRefreshToken
 from profile_player.models import PlayerProfile
 from profile_player.services.interfacer import (
+    svc_player_check_if_player_with_email_exists,
     svc_player_create_player_for_platform_user,
     svc_player_get_player_for_platform_user,
     svc_player_get_serialized_player_profile,
@@ -77,18 +78,43 @@ def _svc_get_auth_tokens_for_profile(platform_user: PlatformUser, role: UserRole
     return str(access_token), str(refresh_token)
 
 
+def _svc_get_serialized_player_profile(player: PlayerProfile):
+    logger.debug(f">> ARGS: {locals()}")
+
+    return svc_player_get_serialized_player_profile(player=player)
+
+
+def _svc_get_all_serialized_roles_for_user(platform_user: PlatformUser):
+    logger.debug(f">> ARGS: {locals()}")
+
+    profiles = {}
+
+    error, player = svc_player_get_player_for_platform_user(platform_user=platform_user)
+    if player:
+        access_token, refresh_token = _svc_get_auth_tokens_for_profile(
+            platform_user=platform_user, role=UserRolesType.PLAYER
+        )
+        profiles[UserRolesType.get_string_for_type(UserRolesType.PLAYER)] = {
+            "data": _svc_get_serialized_player_profile(player=player),
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+        }
+
+    return profiles
+
+
 ######################################################################################################################
 ########################################   PRIVATE FUNCTIONS END   ###################################################
 ######################################################################################################################
 
 
-def svc_auth_helper_run_validations_to_get_token(request_data: dict):
+def svc_auth_helper_run_validations_for_user_login(request_data: dict):
     logger.debug(">>")  # Not logging locals since password will get logged
 
     return _svc_run_basic_user_validations(request_data=request_data)
 
 
-def svc_auth_helper_run_validations_to_create_user(request_data: dict):
+def svc_auth_helper_run_validations_for_user_sign_up(request_data: dict):
     logger.debug(">>")  # Not logging locals since password will get logged
 
     error = _svc_run_basic_user_validations(request_data=request_data)
@@ -99,6 +125,12 @@ def svc_auth_helper_run_validations_to_create_user(request_data: dict):
     if error:
         return error
 
+    if not request_data.get("role"):
+        return ErrorCode(ErrorCode.MISSING_ROLE)
+
+    if not request_data.get("profile_name"):
+        return ErrorCode(ErrorCode.MISSING_PROFILE_NAME)
+
     if not request_data.get("confirm_password"):
         return ErrorCode(ErrorCode.MISSING_CONFIRM_PASSWORD)
 
@@ -108,11 +140,14 @@ def svc_auth_helper_run_validations_to_create_user(request_data: dict):
     return None
 
 
-def svc_auth_helper_run_validations_to_check_user_exists(request_data: dict):
+def svc_auth_helper_run_validations_to_check_user_and_profile_exists(request_data: dict):
     logger.debug(f">> ARGS: {locals()}")
 
     if not request_data.get("email"):
         return ErrorCode(ErrorCode.MISSING_EMAIL)
+
+    if not request_data.get("role"):
+        return ErrorCode(ErrorCode.MISSING_ROLE)
 
     return None
 
@@ -125,18 +160,6 @@ def svc_auth_helper_run_validations_to_refresh_token(request_data: dict):
 
     if not request_data.get("user_id"):
         return ErrorCode(ErrorCode.MISSING_USER_ID)
-
-    return None
-
-
-def svc_auth_helper_run_validations_to_create_profile(request_data: dict):
-    logger.debug(f">> ARGS: {locals()}")
-
-    if not request_data.get("role"):
-        return ErrorCode(ErrorCode.MISSING_ROLE)
-
-    if not request_data.get("profile_name"):
-        return ErrorCode(ErrorCode.MISSING_PROFILE_NAME)
 
     return None
 
@@ -222,16 +245,10 @@ def svc_auth_helper_validate_and_get_phone_number(phone: str):
     return None, parsed_e164
 
 
-def svc_auth_helper_create_new_user(email: str, password: str, phone: str = None):
+def svc_auth_helper_get_or_create_new_user(email: str, password: str, phone: str = None):
     logger.debug(">>")  # Not logging locals since password will get logged
 
-    return svc_account_create_platform_user(email=email, password=password, phone=phone)
-
-
-def svc_auth_helper_get_serialized_platform_user(platform_user: PlatformUser):
-    logger.debug(f">> ARGS: {locals()}")
-
-    return svc_account_get_serialized_platform_user(platform_user=platform_user)
+    return svc_account_get_or_create_platform_user(email=email, password=password, phone=phone)
 
 
 def svc_auth_helper_check_user_exists(email: str):
@@ -240,10 +257,18 @@ def svc_auth_helper_check_user_exists(email: str):
     return svc_account_check_if_user_with_email_exists(email=email)
 
 
-def svc_auth_helper_get_serialized_user_exists(user_exists: bool):
+def svc_auth_helper_check_profile_exists(email: str, role: UserRolesType):
     logger.debug(f">> ARGS: {locals()}")
 
-    return {"user_exists": user_exists}
+    PROFILE_CHECK_MAP = {UserRolesType.PLAYER: svc_player_check_if_player_with_email_exists}
+
+    return PROFILE_CHECK_MAP[role](email=email)
+
+
+def svc_auth_helper_get_serialized_user_and_profile_exists(user_exists: bool, profile_exists: bool):
+    logger.debug(f">> ARGS: {locals()}")
+
+    return {"user_exists": user_exists, "profile_exists": profile_exists}
 
 
 def svc_auth_helper_get_token_and_user_for_token_refresh(refresh_token: str, platform_user: PlatformUser):
@@ -273,27 +298,8 @@ def svc_auth_helper_get_serialized_refresh_token(access_token: str, refresh_toke
         "user": svc_auth_helper_get_serialized_jwt_token(
             access_token=access_token, refresh_token=refresh_token, platform_user=platform_user
         ),
-        "profiles": svc_auth_helper_get_all_serialized_roles_for_user(platform_user=platform_user),
+        "profiles": _svc_get_all_serialized_roles_for_user(platform_user=platform_user),
     }
-
-
-def svc_auth_helper_get_all_serialized_roles_for_user(platform_user: PlatformUser):
-    logger.debug(f">> ARGS: {locals()}")
-
-    profiles = {}
-
-    error, player = svc_player_get_player_for_platform_user(platform_user=platform_user)
-    if player:
-        access_token, refresh_token = _svc_get_auth_tokens_for_profile(
-            platform_user=platform_user, role=UserRolesType.PLAYER
-        )
-        profiles[UserRolesType.get_string_for_type(UserRolesType.PLAYER)] = {
-            "data": svc_player_get_serialized_player_profile(player=player),
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        }
-
-    return profiles
 
 
 def svc_auth_helper_create_profile_for_user(
@@ -301,7 +307,7 @@ def svc_auth_helper_create_profile_for_user(
     role: UserRolesType,
     profile_name: str,
     profile_pic: dict = {},
-    serialized: bool = True,
+    serialized: bool = False,
 ):
     logger.debug(f">> ARGS: {locals()}")
 
@@ -340,3 +346,14 @@ def svc_auth_helper_update_password(platform_user: PlatformUser, password: str):
     platform_user.save()
 
     return platform_user
+
+
+def svc_auth_helper_get_serialized_user_for_signup(
+    platform_user: PlatformUser, role: UserRolesType, profile: PlayerProfile
+):
+    logger.debug(f">> ARGS: {locals()}")
+
+    return {
+        "user": svc_account_get_serialized_platform_user(platform_user=platform_user),
+        "profiles": {UserRolesType.get_string_for_type(role): _svc_get_serialized_player_profile(player=profile)},
+    }
