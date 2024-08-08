@@ -49,3 +49,9 @@ def svc_player_helper_update_player(player: PlayerProfile, request_data: dict):
 
     player.save()
     return player
+
+
+def svc_player_helper_check_if_player_with_email_exists(email: str):
+    logger.debug(f">> ARGS: {locals()}")
+
+    return PlayerProfile.objects.filter(platform_user__email=email).exists()

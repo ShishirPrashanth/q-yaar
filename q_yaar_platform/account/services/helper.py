@@ -36,18 +36,20 @@ def svc_account_helper_get_serialized_platform_user(platform_user: PlatformUser)
     return PlatformUserSerializer(platform_user, many=False).data
 
 
-def svc_account_helper_create_platform_user(email: str, password: str, phone: str = None):
+def svc_account_helper_get_or_create_platform_user(email: str, password: str, phone: str = None):
     logger.debug(">>")  # Not logging locals since password will get logged
 
     with transaction.atomic():
         try:
-            platform_user = PlatformUser.create(email=email, phone=phone)
-            platform_user.set_password(password)
-            platform_user.save()
-        except IntegrityError:
-            return ErrorCode(ErrorCode.USER_WITH_EMAIL_ALREADY_EXISTS, email=email), None
+            platform_user = PlatformUser.objects.get(email=email)
+        except ObjectDoesNotExist:
+            platform_user = PlatformUser.create(email=email)
 
-    return None, platform_user
+        platform_user.set_password(password)
+        platform_user.phone = phone
+        platform_user.save()
+
+    return platform_user
 
 
 def svc_account_helper_check_if_user_with_email_exists(email: str):

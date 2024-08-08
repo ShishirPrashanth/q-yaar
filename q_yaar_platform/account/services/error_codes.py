@@ -19,12 +19,10 @@ class ErrorCode(BaseErrorCode):
     INVALID_USER_EMAIL = "302"
 
     # Integrity Errors - 4 Series
-    USER_WITH_EMAIL_ALREADY_EXISTS = "401"
 
     ERROR_CODE_HTTP_MAP = {
         INVALID_USER_ID: status.HTTP_400_BAD_REQUEST,
         INVALID_USER_EMAIL: status.HTTP_400_BAD_REQUEST,
-        USER_WITH_EMAIL_ALREADY_EXISTS: status.HTTP_400_BAD_REQUEST,
     }
 
     def get_string_for_invalid_user_id(kwargs: dict):
@@ -33,13 +31,9 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_invalid_email(kwargs: dict):
         return f"Invalid email - {kwargs.get('email')}"
 
-    def get_string_for_user_with_email_already_exists(kwargs: dict):
-        return f"User with email - {kwargs.get('email')} already exists. Login instead."
-
     CODE_MESSAGE_MAP = {
         INVALID_USER_ID: get_string_for_invalid_user_id,
         INVALID_USER_EMAIL: get_string_for_invalid_email,
-        USER_WITH_EMAIL_ALREADY_EXISTS: get_string_for_user_with_email_already_exists,
     }
 
     def __init__(self, code, **kwargs) -> None:
