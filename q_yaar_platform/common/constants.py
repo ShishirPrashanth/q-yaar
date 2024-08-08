@@ -34,5 +34,11 @@ class Length:
     PHONE_NUMBER = 14
 
 
+class ModuleErrorPrefix:
+    JWT_AUTH = "AUTH"
+    ACCOUNT = "ACC"
+    PROFILE_PLAYER = "PLYR"
+
+
 class UserRolesType(BaseIntEnum):
     PLAYER = 1

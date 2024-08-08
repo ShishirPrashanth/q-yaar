@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from .forms import CustomAdminAuthenticationForm
 
@@ -29,6 +29,4 @@ admin.site.enable_nav_sidebar = False
 # To work with UUID based login
 admin.site.login_form = CustomAdminAuthenticationForm
 
-urlpatterns = [
-    path("admin/", admin.site.urls),
-]
+urlpatterns = [path("admin/", admin.site.urls), path("api/v1/auth/", include("jwt_auth.api.urls"))]

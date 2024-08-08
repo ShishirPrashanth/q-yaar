@@ -65,11 +65,12 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",  # Django Simple JWT
 ]
 
-PROJECT_APPS = ["account.apps.AccountConfig", "profile_player.apps.ProfilePlayerConfig"]
+PROJECT_APPS = ["account.apps.AccountConfig", "profile_player.apps.ProfilePlayerConfig", "jwt_auth.apps.JwtAuthConfig"]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
 MIDDLEWARE = [
+    "log_request_id.middleware.RequestIDMiddleware",  # Logging-Request-ID
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -137,6 +138,8 @@ CACHES = {
     }
 }
 
+LAST_LOGIN_CACHE_TTL = 24 * 60 * 60  # (24 hours)
+
 #######################################################################################################################
 
 # Password validation
@@ -183,12 +186,36 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django REST Framework
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated"),
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication"),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
 }
 
-# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=30)}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    "JTI_CLAIM": "jti",
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+}
 
 #######################################################################################################################
 
@@ -225,3 +252,62 @@ else:
 
 BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 86400}  # 1 day
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+#######################################################################################################################
+
+# Logger
+
+APPLICATION_LOGGERS_DEFAULT_LEVEL = "DEBUG"
+APPLICATION_LOGGERS_DEFAULT_HANDLERS = ["console"]
+
+APPLICATION_LOGGERS = {
+    "account": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
+    "jwt_auth": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
+    "profile_player": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
+}
+
+DJANGO_DEFAULT_LOGGERS = {
+    "django": {"handlers": (["console"]), "propagate": False, "level": "ERROR" if IS_PROD else "INFO"},
+    "django.request": {"handlers": (["console"]), "level": "ERROR", "propagate": False},
+    "django.db": {"handlers": (["console"]), "propagate": False, "level": "ERROR" if IS_PROD else "WARNING"},
+    "django.security": {"handlers": (["console"]), "propagate": False, "level": "WARNING" if IS_PROD else "DEBUG"},
+}
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {request_id} {name} {funcName} {lineno} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {"format": "{levelname} {message}", "style": "{"},
+    },
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+        "request_id": {"()": "log_request_id.filters.RequestIDFilter"},
+    },
+    "handlers": {
+        "null": {"class": "logging.NullHandler"},
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["request_id"],
+        },
+    },
+    "loggers": {**DJANGO_DEFAULT_LOGGERS, **APPLICATION_LOGGERS},
+}
