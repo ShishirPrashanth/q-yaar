@@ -37,9 +37,6 @@ IS_LOCAL = config("IS_LOCAL", default=False, cast=bool)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-p(ik-w@g&pzgae#3+h*v57&#trv7jskbmu%w3ha_5v%&qxb8r*"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = []
 
 #######################################################################################################################
@@ -186,8 +183,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django REST Framework
 
 REST_FRAMEWORK = {
+    "PAGE_SIZE": 20,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": config("ANON_THROTTLING", default="4000/minute"),
+        "user": config("USER_THROTTLING", default="100000000/minute"),
+        "token-less-url": config("TOKEN_LESS_THROTTLING", default="100/minute"),
+        "token-less-auth-url-burst": config("TOKEN_LESS_AUTH_THROTTLING_BURST", default="100/minute"),
+        "token-less-auth-url-sustained": config("TOKEN_LESS_AUTH_THROTTLING_SUSTAINED", default="10000/day"),
+    },
 }
 
 SIMPLE_JWT = {

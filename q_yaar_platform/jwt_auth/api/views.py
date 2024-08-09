@@ -3,6 +3,7 @@ import logging
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from common.custom_throttlers import TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained
 from common.decorators import validate_profile
 from common.permissions import ActivePermission
 from common.response import get_standard_response
@@ -19,6 +20,7 @@ from jwt_auth.services.core import (
 class LoginView(generics.GenericAPIView):
     logger = logging.getLogger(__name__ + ".LoginView")
     permission_classes = (AllowAny,)
+    throttle_classes = [TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained]
 
     def post(self, request, **kwargs):
         """
@@ -31,6 +33,7 @@ class LoginView(generics.GenericAPIView):
 class SignupView(generics.GenericAPIView):
     logger = logging.getLogger(__name__ + ".SignupView")
     permission_classes = (AllowAny,)
+    throttle_classes = [TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained]
 
     def post(self, request, **kwargs):
         """
@@ -43,6 +46,7 @@ class SignupView(generics.GenericAPIView):
 class TokenRefreshView(generics.GenericAPIView):
     logger = logging.getLogger(__name__ + ".TokenRefreshView")
     permission_classes = (AllowAny,)
+    throttle_classes = [TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained]
 
     def post(self, request, **kwargs):
         error, response = svc_auth_refresh_token(request_data=request.data)
@@ -52,6 +56,7 @@ class TokenRefreshView(generics.GenericAPIView):
 class UserView(generics.GenericAPIView):
     logger = logging.getLogger(__name__ + ".UserView")
     permission_classes = (AllowAny,)
+    throttle_classes = [TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained]
 
     def get(self, request, **kwargs):
         """
