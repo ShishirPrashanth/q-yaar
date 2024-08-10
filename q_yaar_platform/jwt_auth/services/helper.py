@@ -230,7 +230,7 @@ def svc_auth_helper_get_serialized_jwt_token(access_token, refresh_token: str, p
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "user": svc_account_get_serialized_platform_user(platform_user=platform_user),
+        "data": svc_account_get_serialized_platform_user(platform_user=platform_user),
     }
 
 
