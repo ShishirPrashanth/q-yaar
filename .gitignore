@@ -3,3 +3,5 @@
 .vscode/
 .coverage
 staticfiles
+docker/redis/
+.venv/

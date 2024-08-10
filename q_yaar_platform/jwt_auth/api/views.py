@@ -3,6 +3,7 @@ import logging
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from common.custom_throttlers import TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained
 from common.decorators import validate_profile
 from common.permissions import ActivePermission
 from common.response import get_standard_response
@@ -31,6 +32,7 @@ class LoginView(generics.GenericAPIView):
 class SignupView(generics.GenericAPIView):
     logger = logging.getLogger(__name__ + ".SignupView")
     permission_classes = (AllowAny,)
+    throttle_classes = [TokenLessAuthAPIThrottleBurst, TokenLessAuthAPIThrottleSustained]
 
     def post(self, request, **kwargs):
         """
