@@ -10,6 +10,59 @@ Get out to play.
 * Docker Compose - Follow the [link](https://docs.docker.com/compose/install/)
 * Redis
 
+## ***Setup on Windows (Using WSL)***
+*WSL allows you to run a Linux environment on Windows. This is the preferred way to run the project on Windows.*
+
+#### 1. WSL Installation
+
+Open PowerShell/Terminal as an administrator and run the following command:
+
+```bash
+wsl --install
+```
+
+This will install WSL2 and Ubuntu 22.04 on your system by default.
+Incase you face any issues refer to this [link](https://docs.microsoft.com/en-us/windows/wsl/install).
+
+#### 2. Ubuntu Setup
+
+1. Open Ubuntu 22.04 from the start menu or just run the following command in PowerShell/Terminal:
+    ```bash
+    wsl
+    ```
+2. Set up a username and password.
+3. Update and upgrade the packages by 
+
+    ```bash
+    $ sudo apt update
+    $ sudo apt upgrade
+    ```
+4. Install python3.11 and set it to default by running the following commands:
+
+    ```bash
+    $ sudo apt install software-properties-common
+    $ sudo add-apt-repository ppa:deadsnakes/ppa
+    $ sudo apt install python3.11
+    $ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+    $ sudo update-alternatives --config python3
+    ```
+5. Setup Postgres:
+
+    *Follow the steps in section - Setup Postgres in the Local Setup section below. Just make sure you're in the Ubuntu terminal.*
+
+#### 3. Setup Docker 
+Install docker desktop for windows from [here](https://docs.docker.com/get-docker/). In the settings make sure you have WSL2 as the default engine.
+
+#### 4. Setup VSCode WSL Remote Connecction
+1. Install the Remote - WSL extension in VSCode. This will allow to run VSCode in the WSL environment.
+2. Pull your repository in the WSL environment and open it in VSCode.
+3. Everything will now run in linux environment but you can enjoy the GUI of VSCode in windows.
+
+Windows setup is done, for running the project follow the steps in the Local Setup section below.
+
+
+
+
 ## ***Setup on Local***
 
 ### Setup Postgres
