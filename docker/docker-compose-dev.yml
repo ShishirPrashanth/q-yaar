@@ -44,8 +44,8 @@ services:
 
   q_yaar_db:
     image: postgres
-    expose:
-      - "5434"
+    ports:
+      - "5434:5432"
     environment:
       - POSTGRES_DB=q_yaar_db
       - POSTGRES_USER=q_yaar_user
