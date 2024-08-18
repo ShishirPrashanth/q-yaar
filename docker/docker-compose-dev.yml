@@ -21,7 +21,8 @@ services:
       - DATABASE_URL=postgres://q_yaar_user:q_yaar_password@q_yaar_db:5432/q_yaar_db
       - REDIS_URL=redis://q_yaar_redisearch:6380/0
       - TEST_DB_NAME=q_yaar_db_test
-    command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
   q_yaar_fast_worker:
     build: 
@@ -61,6 +62,8 @@ services:
     image: postgres
     ports:
       - "5434:5432"
+    expose:
+      - "5432"
     environment:
       - POSTGRES_DB=q_yaar_db
       - POSTGRES_USER=q_yaar_user
@@ -74,6 +77,8 @@ services:
     image: redislabs/redisearch:latest
     ports:
       - "6380:6380"
+    expose:
+      - "5432"
     volumes:
       - ./redis:/data
     command:
