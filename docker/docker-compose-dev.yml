@@ -3,7 +3,9 @@ version: '3'
 services:
   q_yaar_core:
     restart: always
-    build: ./../q_yaar_platform
+    build: 
+      context: ./../q_yaar_platform
+      dockerfile: ./Dockerfile-dev
     ports:
       - "8000:8000"
     depends_on:
@@ -11,11 +13,20 @@ services:
       - q_yaar_db
     networks:
       - backend
-    env_file: ./../q_yaar_platform/.env
-    command: gunicorn q_yaar.wsgi:application -w 4 -b :8000
+    environment:
+      - IS_LOCAL=True
+      - IS_PREPROD=False
+      - IS_PROD=False
+      - DEBUG=True
+      - DATABASE_URL=postgres://q_yaar_user:q_yaar_password@q_yaar_db:5432/q_yaar_db
+      - REDIS_URL=redis://q_yaar_redisearch:6380/0
+      - TEST_DB_NAME=q_yaar_db_test
+    command: python manage.py runserver 0.0.0.0:8000
 
   q_yaar_fast_worker:
-    build: ./../q_yaar_platform
+    build: 
+      context: ./../q_yaar_platform
+      dockerfile: ./Dockerfile-dev
     command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n fast_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
@@ -24,7 +35,9 @@ services:
       - backend
 
   q_yaar_slow_worker:
-    build: ./../q_yaar_platform
+    build: 
+      context: ./../q_yaar_platform
+      dockerfile: ./Dockerfile-dev
     command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n slow_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
@@ -33,7 +46,9 @@ services:
       - backend
 
   q_yaar_celery_beat:
-    build: ./../q_yaar_platform
+    build: 
+      context: ./../q_yaar_platform
+      dockerfile: ./Dockerfile-dev
     command: celery -A esamudaay_platform beat -l debug
     env_file: ./../q_yaar_platform/.env
     depends_on:
