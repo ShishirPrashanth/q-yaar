@@ -5,7 +5,7 @@ services:
     restart: always
     build: 
       context: ./../q_yaar_platform
-      dockerfile: ./Dockerfile-dev
+      dockerfile: ./docker/Dockerfile-dev
     ports:
       - "8000:8000"
     depends_on:
