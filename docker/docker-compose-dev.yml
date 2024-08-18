@@ -78,7 +78,7 @@ services:
     ports:
       - "6380:6380"
     expose:
-      - "5432"
+      - "6380"
     volumes:
       - ./redis:/data
     command:
