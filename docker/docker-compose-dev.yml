@@ -16,7 +16,7 @@ services:
 
   q_yaar_fast_worker:
     build: ./../q_yaar_platform
-    command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n fast_worker@qyaar.com  -Q example
+    command: celery -A q_yaar worker -E -l info --concurrency=8 --pool=prefork -n fast_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
       - q_yaar_redisearch
@@ -25,7 +25,7 @@ services:
 
   q_yaar_slow_worker:
     build: ./../q_yaar_platform
-    command: celery -A esamudaay_platform worker -E -l info --concurrency=8 --pool -n slow_worker@qyaar.com  -Q example
+    command: celery -A q_yaar worker -E -l info --concurrency=8 --pool=prefork -n slow_worker@qyaar.com  -Q example
     env_file: ./../q_yaar_platform/.env
     depends_on:
       - q_yaar_redisearch
@@ -34,7 +34,7 @@ services:
 
   q_yaar_celery_beat:
     build: ./../q_yaar_platform
-    command: celery -A esamudaay_platform beat -l debug
+    command: celery -A q_yaar beat -l debug
     env_file: ./../q_yaar_platform/.env
     depends_on:
       - q_yaar_redisearch
