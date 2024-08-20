@@ -172,7 +172,7 @@ From the project root run the follwing command
 ```bash
 $ sudo docker-compose -f docker/docker-compose-dev.yml up -d
 ```
-To crate superuser get inside the docker container
+To create superuser get inside the docker container
 ```bash
 $ docker exec -it docker-q_yaar_core-1 /bin/bash
 ```
