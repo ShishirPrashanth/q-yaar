@@ -83,6 +83,8 @@ services:
         "--aof-use-rdb-preamble",
         "yes"
       ]
+    networks:
+      - backend
 
 networks:
   backend:
