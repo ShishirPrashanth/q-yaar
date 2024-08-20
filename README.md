@@ -166,3 +166,18 @@ Make sure the line length arg is set to 119 (it defaults to 80 if nothing is set
     ]
 }
 ```
+
+### Running dev server with Docker
+From the project root run the follwing command
+```bash
+$ sudo docker-compose -f docker/docker-compose-dev.yml up -d
+```
+To create superuser get inside the docker container
+```bash
+$ docker exec -it docker-q_yaar_core-1 /bin/bash
+```
+Now create a super user
+```bash
+$ python manage.py createsuperuser
+```
+
