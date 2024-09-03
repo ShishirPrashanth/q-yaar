@@ -50,6 +50,7 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
 ]
 
 THIRD_PARTY_APPS = [
@@ -62,7 +63,12 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",  # Django Simple JWT
 ]
 
-PROJECT_APPS = ["account.apps.AccountConfig", "profile_player.apps.ProfilePlayerConfig", "jwt_auth.apps.JwtAuthConfig"]
+PROJECT_APPS = [
+    "account.apps.AccountConfig",
+    "profile_player.apps.ProfilePlayerConfig",
+    "jwt_auth.apps.JwtAuthConfig",
+    "geodb.apps.GeodbConfig",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
@@ -103,8 +109,10 @@ WSGI_APPLICATION = "q_yaar.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASE_URL = config("DATABASE_URL")
+GEO_DATABASE_URL = config("GEO_DATABASE_URL")
 
 DEFAULT_DB_CONFIG = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
+GEO_DB_CONFIG = dj_database_url.parse(GEO_DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
 
 # For running UTs
 DEFAULT_DB_CONFIG["TEST"] = {"NAME": config("TEST_DB_NAME")}
@@ -119,8 +127,26 @@ DATABASES = {
         "PORT": DEFAULT_DB_CONFIG["PORT"],
         "CONN_MAX_AGE": DEFAULT_DB_CONFIG["CONN_MAX_AGE"],
         "TEST": {"NAME": DEFAULT_DB_CONFIG["TEST"]["NAME"]},
+    },
+    "geo": {
+        "ENGINE": GEO_DB_CONFIG["ENGINE"],
+        "NAME": GEO_DB_CONFIG["NAME"],
+        "USER": GEO_DB_CONFIG["USER"],
+        "PASSWORD": GEO_DB_CONFIG["PASSWORD"],
+        'OPTIONS': {
+            'options': '-c search_path=osm,public'
+        },
+        "HOST": GEO_DB_CONFIG["HOST"],
+        "PORT": GEO_DB_CONFIG["PORT"],
+        "CONN_MAX_AGE": GEO_DB_CONFIG["CONN_MAX_AGE"],
+        "TEST": {"NAME": DEFAULT_DB_CONFIG["TEST"]["NAME"]},
     }
 }
+
+DATABASE_ROUTERS = [
+    "database_routers.geodb.GeodbRouter",
+    "database_routers.q_yaar.QYaarRouter",
+]
 
 #######################################################################################################################
 
