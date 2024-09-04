@@ -32,6 +32,7 @@ class BaseIntEnum(enum.IntEnum):
 class Length:
     USER_NAME = 32
     PHONE_NUMBER = 14
+    GAME_CODE = 8
 
 
 class ModuleErrorPrefix:
@@ -42,3 +43,12 @@ class ModuleErrorPrefix:
 
 class UserRolesType(BaseIntEnum):
     PLAYER = 1
+
+
+class GameStatus(BaseIntEnum):
+    CREATED = 1  # Initial game status during object creation
+    LOCKED = 2  # Game not yet started but no more players allowed to join. Game config can still be changed
+    IN_PROGRESS = 3  # Game has started, no more changes to game config
+    COMPLETE = 4  # Game over. The game object is immutable from now.
+
+    ABANDONED = 99  # 1. Game never started 2. Game abandoned in the middle of the game

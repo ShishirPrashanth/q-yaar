@@ -6,8 +6,9 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 
-from common.constants import Length
+from common.constants import GameStatus, Length
 from common.uuid import unique_uuid4
 
 
@@ -97,3 +98,19 @@ class AbstractUserProfile(models.Model):
         if save:
             self.save()
         return self
+
+
+class AbstractGame(models.Model):
+    game_code = models.CharField(max_length=Length.GAME_CODE, blank=False, null=False)
+    # area_of_play = models.ForeignKey()  TODO: Link to geo fk with geo json
+    game_status = models.PositiveIntegerField(choices=GameStatus.get_choices(), default=GameStatus.CREATED)
+
+    class Meta:
+        abstract = True
+        constraints = [
+            UniqueConstraint(
+                fields=["game_code", "game_status"],
+                condition=Q(game_status=GameStatus.CREATED.value),
+                name="unique_game_code_for_created_games",
+            )
+        ]
