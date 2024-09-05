@@ -67,6 +67,7 @@ PROJECT_APPS = [
     "profile_player.apps.ProfilePlayerConfig",
     "jwt_auth.apps.JwtAuthConfig",
     "treasure_hunt.apps.TreasureHuntConfig",
+    "game_history.apps.GameHistoryConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -293,6 +294,11 @@ APPLICATION_LOGGERS = {
         "propagate": False,
     },
     "treasure_hunt": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
+    "game_history": {
         "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
         "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
         "propagate": False,

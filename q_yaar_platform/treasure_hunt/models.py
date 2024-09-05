@@ -14,6 +14,7 @@ from common.abstract_models import (
 )
 from common.constants import GameStatus
 from profile_player.models import PlayerProfile
+from profile_player.popo.player_info import PlayerInfoConfig
 from treasure_hunt.popo.time_interval import TimeIntervalListConfig
 
 
@@ -107,21 +108,24 @@ class TreasureHuntTeam(AbstractTeam, AbstractExternalFacing, AbstractTimeStamped
 
 
 class TreasureHuntPlayer(AbstractTimeStamped):
+    CONST_KEY_PLAYER_INFO = "player_info"
+
     player = models.ForeignKey(PlayerProfile, on_delete=models.SET_NULL, blank=True, null=True)
     team = models.ForeignKey(TreasureHuntTeam, on_delete=models.CASCADE, blank=True, null=True, default=None)
     game = models.ForeignKey(
         TreasureHuntGame, on_delete=models.CASCADE
     )  # can get this from team.game as well but this is for when the player hasn't yet joined a team
 
+    info = models.JSONField(default=dict)
+
     class Meta:
         indexes = [models.Index(fields=["player"]), models.Index(fields=["team"]), models.Index(fields=["game"])]
 
     @classmethod
     def create(
-        cls, player: PlayerProfile, game: TreasureHuntGame, team: TreasureHuntTeam | None = None
+        cls, player: PlayerProfile, game: TreasureHuntGame, player_info: PlayerInfoConfig
     ) -> "TreasureHuntPlayer":
-        treasure_hunt_player = cls(player=player, game=game)
-        if team:
-            treasure_hunt_player.team = team
+        info = {cls.CONST_KEY_PLAYER_INFO: player_info.to_json()}
+        treasure_hunt_player = cls(player=player, game=game, info=info)
         treasure_hunt_player.save()
         return treasure_hunt_player
