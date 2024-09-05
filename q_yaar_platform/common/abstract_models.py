@@ -6,7 +6,6 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q, UniqueConstraint
 
 from common.constants import GameStatus, Length
 from common.uuid import unique_uuid4
@@ -107,10 +106,3 @@ class AbstractGame(models.Model):
 
     class Meta:
         abstract = True
-        constraints = [
-            UniqueConstraint(
-                fields=["game_code", "game_status"],
-                condition=Q(game_status=GameStatus.CREATED.value),
-                name="unique_game_code_for_created_games",
-            )
-        ]

@@ -3,8 +3,10 @@ import pghistory
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 
 from common.abstract_models import AbstractExternalFacing, AbstractGame, AbstractTimeStamped, AbstractVersioned
+from common.constants import GameStatus
 from treasure_hunt.popo.time_interval import TimeIntervalListConfig
 
 
@@ -18,6 +20,13 @@ class TreasureHuntGame(AbstractGame, AbstractExternalFacing, AbstractTimeStamped
 
     class Meta:
         indexes = [models.Index(fields=["game_code"])]
+        constraints = [
+            UniqueConstraint(
+                fields=["game_code", "game_status"],
+                condition=Q(game_status=GameStatus.CREATED.value),
+                name="trasure_hunt_unique_game_code_for_created_games",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.game_code}"
