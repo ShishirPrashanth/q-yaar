@@ -28,5 +28,5 @@ class TimeIntervalListConfig(PopoBase):
             return cls.default()
         return cls(_intervals=[TimeIntervalConfig.from_json(x) for x in config])
 
-    def to_json(self) -> dict:
+    def to_json(self) -> list[dict]:
         return [x.to_json() for x in self._intervals]

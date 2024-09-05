@@ -33,6 +33,7 @@ class Length:
     USER_NAME = 32
     PHONE_NUMBER = 14
     GAME_CODE = 8
+    TEAM_NAME = 32
 
 
 class ModuleErrorPrefix:

@@ -106,3 +106,10 @@ class AbstractGame(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AbstractTeam(models.Model):
+    team_name = models.CharField(max_length=Length.TEAM_NAME, blank=False, null=False)
+
+    class Meta:
+        abstract = True
