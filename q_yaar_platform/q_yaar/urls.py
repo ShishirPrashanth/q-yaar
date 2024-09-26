@@ -29,4 +29,5 @@ admin.site.enable_nav_sidebar = False
 # To work with UUID based login
 admin.site.login_form = CustomAdminAuthenticationForm
 
-urlpatterns = [path("admin/", admin.site.urls), path("api/v1/auth/", include("jwt_auth.api.urls"))]
+urlpatterns = [path("admin/", admin.site.urls), path("api/v1/auth/", include("jwt_auth.api.urls")),
+               path("geodb/", include("geodb.api.urls"))]
