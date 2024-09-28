@@ -78,6 +78,10 @@ ALTER ROLE q_yaar_user SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE q_yaar_db TO q_yaar_user;
 ALTER ROLE q_yaar_user SUPERUSER;
 ALTER ROLE q_yaar_user CREATEDB;
+
+CREATE DATABASE q_yaar_geo_db;
+USE q_yaar_geo_db;
+CREATE EXTENSION postgis();
 ```
 Connect to DB from command line using psql
 ```bash
@@ -110,6 +114,24 @@ $ sudo docker-compose -f docker-compose-dev.yml up -d q_yaar_redisearch
 If you want to stop the Redis server
 ```bash
 $ sudo docker-compose -f docker-compose-dev.yml down
+```
+
+### Loading data into PostGIS
+Build the pgosm-flex docker and run it to load data into PostGIS. Do this from
+the `docker` directory
+```bash
+$ sudo docker build -f docker/pgosm_flex.Dockerfile -t pgosm
+$ sudo docker run -it --env POSTGRES_USER="q_yaar_user" \
+     --env POSTGRES_PASSWORD="q_yaar_password" \
+     --env POSTGRES_DB="q_yaar_geo_db" \
+     --env POSTGRES_HOST=$POSTGRES_HOST \
+     --env POSTGRES_PORT=5432 \
+     -v "output:/app/output" \
+     -v "../q_yaar/util_scripts/pgosm_flex_layerset:/app/flex-config/layerset"\
+     --env PGOSM_LAYERSET="game" \
+     --env PGOSM_LAYERSET_PATH="/app/flex-config/layerset" \
+     pgosm \
+     python3 docker/pgosm_flex.py --ram=3 --layerset=game --region=asia/india --subregion=southern-zone --layerset-path=/app/flex-config/layerset/
 ```
 
 ### Run the Django Server
