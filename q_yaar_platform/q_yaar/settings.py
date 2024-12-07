@@ -62,7 +62,13 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",  # Django Simple JWT
 ]
 
-PROJECT_APPS = ["account.apps.AccountConfig", "profile_player.apps.ProfilePlayerConfig", "jwt_auth.apps.JwtAuthConfig"]
+PROJECT_APPS = [
+    "account.apps.AccountConfig",
+    "profile_player.apps.ProfilePlayerConfig",
+    "jwt_auth.apps.JwtAuthConfig",
+    "treasure_hunt.apps.TreasureHuntConfig",
+    "game_history.apps.GameHistoryConfig",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 
@@ -287,6 +293,16 @@ APPLICATION_LOGGERS = {
         "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
         "propagate": False,
     },
+    "treasure_hunt": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
+    "game_history": {
+        "handlers": APPLICATION_LOGGERS_DEFAULT_HANDLERS,
+        "level": APPLICATION_LOGGERS_DEFAULT_LEVEL,
+        "propagate": False,
+    },
 }
 
 DJANGO_DEFAULT_LOGGERS = {
@@ -322,3 +338,8 @@ LOGGING = {
     },
     "loggers": {**DJANGO_DEFAULT_LOGGERS, **APPLICATION_LOGGERS},
 }
+
+#######################################################################################################################
+
+# Game Config
+GAME_CODE_LENGTH = config("GAME_CODE_LENGTH", cast=int, default=6)
