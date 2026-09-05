@@ -19,6 +19,7 @@ from .helper import (
     svc_media_helper_bind_assets,
     svc_media_helper_get_assets_by_ids,
     svc_media_helper_get_attachments_for_asked_question,
+    svc_media_helper_presign_get_urls,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,3 +82,13 @@ def svc_media_get_attachments_for_asked_question(asked_question) -> list[Asset]:
     logger.debug(f">> ARGS: {locals()}")
 
     return svc_media_helper_get_attachments_for_asked_question(asked_question)
+
+
+def svc_media_get_attachment_urls_for_asked_question(asked_question) -> list[dict]:
+    """Return UPLOADED assets bound to an asked question with presigned
+    download URLs, oldest first."""
+    logger.debug(f">> ARGS: {locals()}")
+
+    assets = svc_media_helper_get_attachments_for_asked_question(asked_question)
+
+    return svc_media_helper_presign_get_urls(assets)
