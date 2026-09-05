@@ -1,4 +1,5 @@
-from common.constants import AssetStatus, QuestionRewardType
+from common.constants import QuestionRewardType
+from media.services.interfacer import svc_media_get_attachment_urls_for_asked_question
 from qna.models import AskedQuestion, QuestionCategory, QuestionReward, QuestionTemplate
 from rest_framework import serializers
 
@@ -123,13 +124,4 @@ class AskedQuestionDetailSerializer(serializers.ModelSerializer):
         return QuestionRewardSerializer(obj.game_question.question_template.category.reward).data
 
     def get_attachments(self, obj: AskedQuestion) -> list[dict]:
-        # Frontend resolves presigned URLs via media API; qna never presigns.
-        return [
-            {
-                "asset_id": str(link.asset.get_external_id()),
-                "asset_name": link.asset.asset_name,
-                "content_type": link.asset.content_type,
-            }
-            for link in obj.asset_links.select_related("asset").order_by("asset__created")
-            if link.asset.status == AssetStatus.UPLOADED.value
-        ]
+        return svc_media_get_attachment_urls_for_asked_question(obj)
