@@ -2,23 +2,21 @@ from django.conf import settings
 from django.db import models
 
 from common.abstract_models import AbstractExternalFacing, AbstractTimeStamped
-from common.constants import AssetStatus, Length, UserRolesType
-from game.models import Game
+from common.constants import AssetStatus, Length
 
 
 class Asset(AbstractExternalFacing, AbstractTimeStamped):
-    # Object keys are namespaced per game so a game's files can be
-    # listed/exported by a single prefix:
-    #   games/{game_external_id}/{role}/{user_external_id}/{file_id}
-    # `file_id` == this row's external_id, so a key traces back to one row.
+    # Object keys are namespaced per bucket:
+    #   {bucket}/{file_id}
+    # `file_id` is a uuid4 separate from this row's external_id.
+    # The asset has no direct link to any game or other context —
+    # association is handled by relation tables in the consuming app.
 
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="media_assets",
     )
-    role = models.PositiveIntegerField(choices=UserRolesType.get_choices())
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="media_assets")
 
     object_key = models.CharField(max_length=Length.ASSET_OBJECT_KEY)
     asset_name = models.CharField(max_length=Length.ASSET_NAME)
@@ -28,7 +26,6 @@ class Asset(AbstractExternalFacing, AbstractTimeStamped):
 
     class Meta:
         indexes = [
-            models.Index(fields=["game"]),
             models.Index(fields=["status"]),
         ]
 
@@ -41,8 +38,6 @@ class Asset(AbstractExternalFacing, AbstractTimeStamped):
         *,
         external_id,
         uploaded_by,
-        role: UserRolesType,
-        game: Game,
         object_key: str,
         asset_name: str,
         content_type: str = "",
@@ -50,8 +45,6 @@ class Asset(AbstractExternalFacing, AbstractTimeStamped):
         asset = cls(
             external_id=external_id,
             uploaded_by=uploaded_by,
-            role=role.value,
-            game=game,
             object_key=object_key,
             asset_name=asset_name,
             content_type=content_type,

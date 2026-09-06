@@ -10,9 +10,9 @@ so any caller passes its full S3 config. Callers own the returned client and
 reuse it across operations to keep the underlying connection pool warm.
 Object keys are built from parts joined by "/":
 
-    games/{game_external_id}/{role}/{user_external_id}/{file_id}
+    {bucket}/{file_id}
 
-so every object for a game lives under a single, export-friendly prefix.
+so every object for a bucket lives under a single prefix.
 """
 
 import logging

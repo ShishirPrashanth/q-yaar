@@ -4,23 +4,18 @@ import uuid
 from django.conf import settings
 from minio import Minio
 
-from common.constants import AssetStatus, UserRolesType
+from common.constants import AssetBucketType, AssetStatus
 from common.storage import build_object_key, build_s3_client, delete_object, presign_get_url, presign_put_url
-from common.uuid import unique_uuid4
-from game.models import Game
-from game.services.interfacer import (
-    svc_game_get_game_by_id,
-    svc_game_verify_game_master_belongs_to_game,
-    svc_game_verify_player_belongs_to_game,
-)
 from media.api.serializers import AssetSerializer
 from media.models import Asset, AssetAskedQuestionRelation
-from profile_game_master.services.interfacer import svc_game_master_get_game_master_for_platform_user
 from profile_player.services.interfacer import svc_player_get_player_for_platform_user
 
 from .error_codes import ErrorCode
 
 logger = logging.getLogger(__name__)
+
+# Bucket types the upload API accepts. New buckets just need an entry here.
+_SUPPORTED_BUCKETS = {AssetBucketType.GAME}
 
 # The storage driver is stateless; this layer owns the one client for the
 # process and reuses it so the underlying connection pool stays warm.
@@ -44,8 +39,10 @@ def _get_s3_client() -> Minio:
 def svc_media_helper_run_validations_to_request_upload(request_data: dict):
     logger.debug(f">> ARGS: {locals()}")
 
-    if not request_data.get("game_id"):
-        return ErrorCode(ErrorCode.MISSING_GAME_ID)
+    bucket = request_data.get("bucket", AssetBucketType.GAME)
+
+    if bucket not in _SUPPORTED_BUCKETS:
+        return ErrorCode(ErrorCode.UNSUPPORTED_BUCKET, bucket=bucket)
 
     if not request_data.get("asset_name"):
         return ErrorCode(ErrorCode.MISSING_ASSET_NAME)
@@ -53,31 +50,11 @@ def svc_media_helper_run_validations_to_request_upload(request_data: dict):
     return None
 
 
-def svc_media_helper_validate_and_get_game(game_id) -> tuple:
-    logger.debug(f">> ARGS: {locals()}")
-
-    return svc_game_get_game_by_id(game_id)
-
-
-# Role -> game membership verifier. Returns the game module's error code
-# (e.g. PLAYER_DOES_NOT_BELONG_TO_GAME) if the profile is not in the game.
-_GAME_VERIFIERS = {
-    UserRolesType.PLAYER: svc_game_verify_player_belongs_to_game,
-    UserRolesType.GAME_MASTER: svc_game_verify_game_master_belongs_to_game,
-}
-
-
-def svc_media_helper_verify_profile_belongs_to_game(profile, game: Game, role: UserRolesType):
-    logger.debug(f">> ARGS: {locals()}")
-
-    return _GAME_VERIFIERS[role](profile, game)
-
-
 def svc_media_helper_validate_and_get_asset(asset_id: uuid.UUID) -> tuple:
     logger.debug(f">> ARGS: {locals()}")
 
     try:
-        asset = Asset.objects.select_related("game", "uploaded_by").get(external_id=asset_id)
+        asset = Asset.objects.select_related("uploaded_by").get(external_id=asset_id)
         return None, asset
     except Asset.DoesNotExist:
         return ErrorCode(ErrorCode.INVALID_ASSET_ID, asset_id=asset_id), None
@@ -87,7 +64,7 @@ def svc_media_helper_get_assets_by_ids(asset_ids) -> list[Asset]:
     logger.debug(f">> ARGS: {locals()}")
 
     ids = [str(asset_id) for asset_id in asset_ids]
-    return list(Asset.objects.filter(external_id__in=ids).select_related("uploaded_by", "game"))
+    return list(Asset.objects.filter(external_id__in=ids).select_related("uploaded_by"))
 
 
 def svc_media_helper_get_attachments_for_asked_question(asked_question) -> list[Asset]:
@@ -108,47 +85,30 @@ def svc_media_helper_bind_assets(assets, asked_question) -> None:
 
 
 # Object key layout, see Asset docstring:
-#   games/{game_external_id}/{role}/{user_external_id}/{file_id}
-def svc_media_helper_build_object_key(game: Game, role: UserRolesType, user_external_id, file_id) -> str:
+#   {bucket}/{file_id}
+def svc_media_helper_build_object_key(bucket: str, file_id) -> str:
     logger.debug(f">> ARGS: {locals()}")
 
-    return build_object_key(
-        "games",
-        str(game.external_id),
-        UserRolesType.get_string_for_type(role),
-        str(user_external_id),
-        str(file_id),
-    )
+    return build_object_key(bucket, str(file_id))
 
 
 def svc_media_helper_create_asset(
-    *, uploaded_by, role: UserRolesType, game: Game, object_key: str, asset_name: str, content_type: str
+    *, external_id, uploaded_by, object_key: str, asset_name: str, content_type: str
 ) -> Asset:
     logger.debug(f">> ARGS: {locals()}")
 
     return Asset.create(
-        external_id=unique_uuid4(),
+        external_id=external_id,
         uploaded_by=uploaded_by,
-        role=role,
-        game=game,
         object_key=object_key,
         asset_name=asset_name,
         content_type=content_type,
     )
 
 
-# Role -> profile service lookup. Resolves the uploader's profile so the
-# serializer can return it instead of a bare role string.
-_PROFILE_GETTERS = {
-    UserRolesType.PLAYER: svc_player_get_player_for_platform_user,
-    UserRolesType.GAME_MASTER: svc_game_master_get_game_master_for_platform_user,
-}
-
-
 def _resolve_uploader_profile(asset: Asset) -> None:
-    """Fetch the uploader's profile and stash it on the asset for the serializer."""
-    getter = _PROFILE_GETTERS[UserRolesType(asset.role)]
-    _, profile = getter(asset.uploaded_by)
+    """Fetch the uploader's player profile for the serializer."""
+    _, profile = svc_player_get_player_for_platform_user(asset.uploaded_by)
     asset._uploader_profile = profile
 
 

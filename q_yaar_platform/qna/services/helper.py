@@ -496,8 +496,7 @@ def svc_qna_helper_answer_asked_question(
     # Bind attachments before flipping answered, so a failed upload or
     # ownership check leaves the question unanswered.
     if asset_ids:
-        game = asked_question.game_question.game
-        error, assets = svc_media_validate_assets_for_answer(asset_ids, player, game)
+        error, assets = svc_media_validate_assets_for_answer(asset_ids, player)
         if error:
             return error, None
 

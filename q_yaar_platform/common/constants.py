@@ -130,6 +130,13 @@ class LocationClientType(BaseIntEnum):
     TRACCAR = 4
 
 
+class AssetBucketType:
+    # Bucket name used as the S3 key prefix and as the discriminator for
+    # which relation table links the asset to its owner context.
+    #   {bucket}/{owner_id}/{object_id}
+    GAME = "game"
+
+
 class AssetStatus(BaseIntEnum):
     PENDING = 1
     UPLOADED = 2

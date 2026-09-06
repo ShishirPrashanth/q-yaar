@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 class ErrorCode(BaseErrorCode):
     # Value Errors - 0 Series
-    MISSING_GAME_ID = "001"
     MISSING_ASSET_NAME = "002"
+    UNSUPPORTED_BUCKET = "003"
 
     # Permission/State Errors - 1 Series
     ASSET_NOT_OWNED = "101"
@@ -20,25 +20,23 @@ class ErrorCode(BaseErrorCode):
     ASSET_ALREADY_ATTACHED = "104"
 
     # Object Does Not Exist Errors - 3 Series
-    ASSET_NOT_IN_GAME = "301"
     INVALID_ASSET_ID = "302"
 
     ERROR_CODE_HTTP_MAP = {
-        MISSING_GAME_ID: status.HTTP_400_BAD_REQUEST,
         MISSING_ASSET_NAME: status.HTTP_400_BAD_REQUEST,
+        UNSUPPORTED_BUCKET: status.HTTP_400_BAD_REQUEST,
         ASSET_NOT_OWNED: status.HTTP_403_FORBIDDEN,
         ASSET_NOT_UPLOADED: status.HTTP_409_CONFLICT,
         ASSET_ALREADY_UPLOADED: status.HTTP_409_CONFLICT,
         ASSET_ALREADY_ATTACHED: status.HTTP_409_CONFLICT,
-        ASSET_NOT_IN_GAME: status.HTTP_400_BAD_REQUEST,
         INVALID_ASSET_ID: status.HTTP_400_BAD_REQUEST,
     }
 
-    def get_string_for_missing_game_id(kwargs: dict):
-        return "Missing game_id"
-
     def get_string_for_missing_asset_name(kwargs: dict):
         return "Missing asset_name"
+
+    def get_string_for_unsupported_bucket(kwargs: dict):
+        return f"Unsupported bucket: {kwargs.get('bucket')}"
 
     def get_string_for_asset_not_owned(kwargs: dict):
         return f"Asset not owned by player: {kwargs.get('asset_id')}"
@@ -55,17 +53,13 @@ class ErrorCode(BaseErrorCode):
     def get_string_for_invalid_asset_id(kwargs: dict):
         return f"Invalid asset_id: {kwargs.get('asset_id')}"
 
-    def get_string_for_asset_not_in_game(kwargs: dict):
-        return f"Asset not in game: {kwargs.get('asset_id')}"
-
     CODE_MESSAGE_MAP = {
-        MISSING_GAME_ID: get_string_for_missing_game_id,
         MISSING_ASSET_NAME: get_string_for_missing_asset_name,
+        UNSUPPORTED_BUCKET: get_string_for_unsupported_bucket,
         ASSET_NOT_OWNED: get_string_for_asset_not_owned,
         ASSET_NOT_UPLOADED: get_string_for_asset_not_uploaded,
         ASSET_ALREADY_UPLOADED: get_string_for_asset_already_uploaded,
         ASSET_ALREADY_ATTACHED: get_string_for_asset_already_attached,
-        ASSET_NOT_IN_GAME: get_string_for_asset_not_in_game,
         INVALID_ASSET_ID: get_string_for_invalid_asset_id,
     }
 

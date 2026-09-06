@@ -10,7 +10,6 @@ import logging
 import uuid
 
 from common.constants import AssetStatus
-from game.models import Game
 from media.models import Asset, AssetAskedQuestionRelation
 from profile_player.models import PlayerProfile
 
@@ -25,17 +24,18 @@ from .helper import (
 logger = logging.getLogger(__name__)
 
 
-def svc_media_validate_assets_for_answer(asset_ids: list[uuid.UUID | str], player: PlayerProfile, game: Game):
+def svc_media_validate_assets_for_answer(asset_ids: list[uuid.UUID | str], player: PlayerProfile):
     """
     Fetch assets by external_id and validate they may be attached to an
-    answer in `game` by `player`.
+    answer by `player`.
+
+    Game authorization is the caller's responsibility (qna), not media's.
 
     Checks, per asset:
       - exists                  -> INVALID_ASSET_ID
       - status == UPLOADED      -> ASSET_NOT_UPLOADED
-      - owned by player's user   -> ASSET_NOT_OWNED
-      - belongs to the same game -> ASSET_NOT_IN_GAME
-      - not already attached     -> ASSET_ALREADY_ATTACHED
+      - owned by player's user  -> ASSET_NOT_OWNED
+      - not already attached    -> ASSET_ALREADY_ATTACHED
 
     Returns (None, assets) on success, (error, None) on the first failure.
     """
@@ -60,9 +60,6 @@ def svc_media_validate_assets_for_answer(asset_ids: list[uuid.UUID | str], playe
 
         if str(asset.uploaded_by.external_id) != player_user_external_id:
             return ErrorCode(ErrorCode.ASSET_NOT_OWNED, asset_id=asset.external_id), None
-
-        if asset.game_id != game.pk:
-            return ErrorCode(ErrorCode.ASSET_NOT_IN_GAME, asset_id=asset.external_id), None
 
         if asset.pk in attached_ids:
             return ErrorCode(ErrorCode.ASSET_ALREADY_ATTACHED, asset_id=asset.external_id), None
