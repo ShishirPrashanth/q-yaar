@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from django.conf import settings
+from django.db import transaction
 from minio import Minio
 
 from common.constants import AssetBucketType, AssetStatus
@@ -84,8 +85,11 @@ def svc_media_helper_bind_assets(assets, asked_question) -> None:
     """Attach assets to an asked question. Caller must have validated them."""
     logger.debug(f">> ARGS: {locals()}")
 
-    for asset in assets:
-        AssetAskedQuestionRelation.create(asset=asset, asked_question=asked_question)
+    # Bind all or nothing: a failure mid-loop must roll back the whole batch
+    # so the asked question never ends up with a partial attachment set.
+    with transaction.atomic():
+        for asset in assets:
+            AssetAskedQuestionRelation.create(asset=asset, asked_question=asked_question)
 
 
 # Object key layout, see Asset docstring:
