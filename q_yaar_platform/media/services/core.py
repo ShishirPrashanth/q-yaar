@@ -118,11 +118,11 @@ def svc_media_get_download_url(asset_id: uuid.UUID, profile):
     return ErrorCode(ErrorCode.SUCCESS), response
 
 
-def svc_media_get_assets(request_data: dict, profile, serialized: bool = True):
+def svc_media_get_assets(profile, serialized: bool = True):
     """List the caller's own assets."""
     logger.debug(f">> ARGS: {locals()}")
 
-    assets = Asset.objects.filter(uploaded_by__external_id=profile.platform_user_id)
+    assets = Asset.objects.filter(uploaded_by__external_id=profile.platform_user_id, is_deleted=False)
 
     if serialized:
         assets = svc_media_helper_get_serialized_assets(assets, profile, many=True)
@@ -131,8 +131,12 @@ def svc_media_get_assets(request_data: dict, profile, serialized: bool = True):
 
 
 def svc_media_delete_asset(asset_id: uuid.UUID, profile):
-    """Delete an asset owned by `profile`. S3 cleanup is handled by the
-    post_delete signal."""
+    """Soft-delete an asset owned by `profile`.
+
+    Sets is_deleted=True and keeps the row. The backing S3 object is left in
+    place; a separate batch job hard-deletes soft-deleted rows later, at which
+    point the post_delete signal cleans up S3.
+    """
     logger.debug(f">> ARGS: {locals()}")
 
     error, asset = svc_media_helper_validate_and_get_asset(asset_id)
@@ -142,6 +146,7 @@ def svc_media_delete_asset(asset_id: uuid.UUID, profile):
     if asset.uploaded_by.external_id != profile.platform_user_id:
         return ErrorCode(ErrorCode.ASSET_NOT_OWNED, asset_id=asset_id), None
 
-    asset.delete()
+    asset.is_deleted = True
+    asset.save()
 
     return ErrorCode(ErrorCode.NO_CONTENT), None

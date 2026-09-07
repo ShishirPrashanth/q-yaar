@@ -56,7 +56,7 @@ def svc_media_helper_validate_and_get_asset(asset_id: uuid.UUID) -> tuple:
     logger.debug(f">> ARGS: {locals()}")
 
     try:
-        asset = Asset.objects.select_related("uploaded_by").get(external_id=asset_id)
+        asset = Asset.objects.select_related("uploaded_by").get(external_id=asset_id, is_deleted=False)
         return None, asset
     except Asset.DoesNotExist:
         return ErrorCode(ErrorCode.INVALID_ASSET_ID, asset_id=asset_id), None
@@ -66,7 +66,7 @@ def svc_media_helper_get_assets_by_ids(asset_ids) -> list[Asset]:
     logger.debug(f">> ARGS: {locals()}")
 
     ids = [str(asset_id) for asset_id in asset_ids]
-    return list(Asset.objects.filter(external_id__in=ids).select_related("uploaded_by"))
+    return list(Asset.objects.filter(external_id__in=ids, is_deleted=False).select_related("uploaded_by"))
 
 
 def svc_media_helper_get_attachments_for_asked_question(asked_question) -> list[Asset]:
@@ -75,7 +75,9 @@ def svc_media_helper_get_attachments_for_asked_question(asked_question) -> list[
 
     asset_ids = asked_question.asset_links.values_list("asset_id", flat=True)
 
-    return list(Asset.objects.filter(pk__in=asset_ids, status=AssetStatus.UPLOADED.value).order_by("created"))
+    return list(
+        Asset.objects.filter(pk__in=asset_ids, status=AssetStatus.UPLOADED.value, is_deleted=False).order_by("created")
+    )
 
 
 def svc_media_helper_bind_assets(assets, asked_question) -> None:

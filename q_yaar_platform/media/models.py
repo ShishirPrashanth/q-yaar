@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.db import models
 
-from common.abstract_models import AbstractExternalFacing, AbstractTimeStamped
+from common.abstract_models import AbstractExternalFacing, AbstractTimeStamped, AbstractVersioned
 from common.constants import AssetStatus, Length
 
 
-class Asset(AbstractExternalFacing, AbstractTimeStamped):
+class Asset(AbstractExternalFacing, AbstractTimeStamped, AbstractVersioned):
     # Object keys are namespaced per bucket:
     #   {bucket}/{file_id}
     # `file_id` is a uuid4 separate from this row's external_id.

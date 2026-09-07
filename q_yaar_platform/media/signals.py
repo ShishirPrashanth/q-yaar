@@ -1,9 +1,14 @@
-"""Delete the backing S3 object when an Asset row is removed.
+"""Delete the backing S3 object when an Asset row is hard-deleted.
 
-Catches all deletion paths (user CASCADE, game CASCADE, explicit delete) in
-one place. The DB row is gone by post_delete time, so the object_key is read
-from the instance before it's discarded. Deletion is offloaded to a celery
-task so a slow or failing S3 call can't block or break the delete path.
+Catches all hard-deletion paths (user CASCADE, game CASCADE, batch cleanup
+of soft-deleted rows) in one place. The DB row is gone by post_delete time,
+so the object_key is read from the instance before it's discarded. Deletion
+is offloaded to a celery task so a slow or failing S3 call can't block or
+break the delete path.
+
+User-initiated deletes are soft (is_deleted=True) and do NOT fire this
+signal; S3 cleanup for those happens when the batch job hard-deletes the
+row later.
 """
 
 import logging
