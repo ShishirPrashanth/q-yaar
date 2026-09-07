@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from common.constants import AssetBucketType, AssetStatus
+from common.constants import AssetStatus
 from common.uuid import unique_uuid4
 from media.models import Asset
 
@@ -27,6 +27,7 @@ def svc_media_request_upload(request_data: dict, profile):
     confirm to flip the row to UPLOADED.
 
     `bucket` selects the S3 key prefix. Only "game" is supported today.
+    Mandatory; the client must always specify it.
     """
     logger.debug(f">> ARGS: {locals()}")
 
@@ -34,7 +35,7 @@ def svc_media_request_upload(request_data: dict, profile):
     if error:
         return error, None
 
-    bucket = request_data.get("bucket", AssetBucketType.GAME)
+    bucket = request_data["bucket"]
 
     uploaded_by = profile.platform_user
 

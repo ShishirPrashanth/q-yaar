@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class ErrorCode(BaseErrorCode):
     # Value Errors - 0 Series
+    MISSING_BUCKET = "001"
     MISSING_ASSET_NAME = "002"
     UNSUPPORTED_BUCKET = "003"
 
@@ -23,6 +24,7 @@ class ErrorCode(BaseErrorCode):
     INVALID_ASSET_ID = "302"
 
     ERROR_CODE_HTTP_MAP = {
+        MISSING_BUCKET: status.HTTP_400_BAD_REQUEST,
         MISSING_ASSET_NAME: status.HTTP_400_BAD_REQUEST,
         UNSUPPORTED_BUCKET: status.HTTP_400_BAD_REQUEST,
         ASSET_NOT_OWNED: status.HTTP_403_FORBIDDEN,
@@ -31,6 +33,9 @@ class ErrorCode(BaseErrorCode):
         ASSET_ALREADY_ATTACHED: status.HTTP_409_CONFLICT,
         INVALID_ASSET_ID: status.HTTP_400_BAD_REQUEST,
     }
+
+    def get_string_for_missing_bucket(kwargs: dict):
+        return "Missing bucket"
 
     def get_string_for_missing_asset_name(kwargs: dict):
         return "Missing asset_name"
@@ -54,6 +59,7 @@ class ErrorCode(BaseErrorCode):
         return f"Invalid asset_id: {kwargs.get('asset_id')}"
 
     CODE_MESSAGE_MAP = {
+        MISSING_BUCKET: get_string_for_missing_bucket,
         MISSING_ASSET_NAME: get_string_for_missing_asset_name,
         UNSUPPORTED_BUCKET: get_string_for_unsupported_bucket,
         ASSET_NOT_OWNED: get_string_for_asset_not_owned,

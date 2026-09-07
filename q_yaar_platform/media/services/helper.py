@@ -38,7 +38,10 @@ def _get_s3_client() -> Minio:
 def svc_media_helper_run_validations_to_request_upload(request_data: dict):
     logger.debug(f">> ARGS: {locals()}")
 
-    bucket = request_data.get("bucket", AssetBucketType.GAME)
+    bucket = request_data.get("bucket")
+
+    if not bucket:
+        return ErrorCode(ErrorCode.MISSING_BUCKET)
 
     if bucket not in _SUPPORTED_BUCKETS:
         return ErrorCode(ErrorCode.UNSUPPORTED_BUCKET, bucket=bucket)
