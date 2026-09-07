@@ -8,7 +8,6 @@ from common.constants import AssetBucketType, AssetStatus
 from common.storage import build_object_key, build_s3_client, delete_object, presign_get_url, presign_put_url
 from media.api.serializers import AssetSerializer
 from media.models import Asset, AssetAskedQuestionRelation
-from profile_player.services.interfacer import svc_player_get_player_for_platform_user
 
 from .error_codes import ErrorCode
 
@@ -106,20 +105,16 @@ def svc_media_helper_create_asset(
     )
 
 
-def _resolve_uploader_profile(asset: Asset) -> None:
-    """Fetch the uploader's player profile for the serializer."""
-    _, profile = svc_player_get_player_for_platform_user(asset.uploaded_by)
-    asset._uploader_profile = profile
-
-
-def svc_media_helper_get_serialized_assets(assets, many: bool = False):
+def svc_media_helper_get_serialized_assets(assets, profile, many: bool = False):
     logger.debug(f">> ARGS: {locals()}")
 
+    # The caller's profile is the uploader for every asset (owner-scoped
+    # queries upstream), so reuse it instead of re-querying per asset.
     if many:
         for asset in assets:
-            _resolve_uploader_profile(asset)
+            asset._uploader_profile = profile
     else:
-        _resolve_uploader_profile(assets)
+        assets._uploader_profile = profile
 
     return AssetSerializer(assets, many=many).data
 

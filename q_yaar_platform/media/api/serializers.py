@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from common.constants import AssetStatus
 from media.models import Asset
+from profile_game_master.api.serializers import GameMasterProfileSerializer
+from profile_game_master.models import GameMasterProfile
 from profile_player.api.serializers import PlayerProfileSerializer
 
 
@@ -27,9 +29,11 @@ class AssetSerializer(serializers.ModelSerializer):
         return str(obj.get_external_id())
 
     def get_profile(self, obj: Asset) -> dict:
-        # Resolved by the service layer and stashed on the asset as
-        # _uploader_profile.
+        # Set by the service layer from the request's profile (owner-scoped).
         profile = obj._uploader_profile
+
+        if isinstance(profile, GameMasterProfile):
+            return GameMasterProfileSerializer(profile, many=False).data
 
         return PlayerProfileSerializer(profile, many=False).data
 

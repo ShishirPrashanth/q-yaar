@@ -82,7 +82,7 @@ def svc_media_confirm_upload(asset_id: uuid.UUID, profile, serialized: bool = Tr
     asset.save()
 
     if serialized:
-        asset = svc_media_helper_get_serialized_assets(asset, many=False)
+        asset = svc_media_helper_get_serialized_assets(asset, profile, many=False)
 
     return ErrorCode(ErrorCode.SUCCESS), asset
 
@@ -124,7 +124,7 @@ def svc_media_get_assets(request_data: dict, profile, serialized: bool = True):
     assets = Asset.objects.filter(uploaded_by__external_id=profile.platform_user_id)
 
     if serialized:
-        assets = svc_media_helper_get_serialized_assets(assets, many=True)
+        assets = svc_media_helper_get_serialized_assets(assets, profile, many=True)
 
     return ErrorCode(ErrorCode.SUCCESS), assets
 
