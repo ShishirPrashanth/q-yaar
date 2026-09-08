@@ -13,7 +13,6 @@ from game.services.helper import (
     svc_game_helper_verify_player_belongs_to_game,
     svc_game_helper_verify_player_is_in_team,
 )
-from profile_game_master.models import GameMasterProfile
 from profile_player.models import PlayerProfile
 
 logger = logging.getLogger(__name__)
