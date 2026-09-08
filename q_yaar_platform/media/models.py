@@ -57,15 +57,14 @@ class Asset(AbstractExternalFacing, AbstractTimeStamped, AbstractVersioned):
 class AssetAskedQuestionRelation(AbstractTimeStamped):
     # Links an asset to the asked question it serves as evidence for.
     # Exclusive binding: one asset belongs to at most one asked question,
-    # enforced by unique_together on (asset,). New attachment targets get
+    # enforced by unique=True on the asset field. New attachment targets get
     # their own relation class instead of overloading Asset.
 
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="asked_question_links")
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="asked_question_links", unique=True)
     asked_question = models.ForeignKey("qna.AskedQuestion", on_delete=models.CASCADE, related_name="asset_links")
 
     class Meta:
         indexes = [models.Index(fields=["asked_question"])]
-        unique_together = (("asset",),)
 
     @classmethod
     def create(cls, *, asset: Asset, asked_question) -> "AssetAskedQuestionRelation":
