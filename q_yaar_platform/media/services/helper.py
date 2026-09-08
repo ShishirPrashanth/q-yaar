@@ -165,6 +165,14 @@ def svc_media_helper_presign_get_urls(assets) -> list[dict]:
     return urls
 
 
+def svc_media_helper_soft_delete(asset: Asset) -> None:
+    """Mark an asset deleted without dropping the row."""
+    logger.debug(f">> ARGS: {locals()}")
+
+    asset.is_deleted = True
+    asset.save()
+
+
 def svc_media_helper_delete_object(object_key: str) -> None:
     """Delete the backing S3 object for an asset."""
     logger.debug(f">> ARGS: {locals()}")

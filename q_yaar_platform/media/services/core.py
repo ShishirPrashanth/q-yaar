@@ -13,6 +13,7 @@ from .helper import (
     svc_media_helper_presign_get_url,
     svc_media_helper_presign_put_url,
     svc_media_helper_run_validations_to_request_upload,
+    svc_media_helper_soft_delete,
     svc_media_helper_validate_and_get_asset,
 )
 
@@ -146,7 +147,6 @@ def svc_media_delete_asset(asset_id: uuid.UUID, profile):
     if asset.uploaded_by.external_id != profile.platform_user_id:
         return ErrorCode(ErrorCode.ASSET_NOT_OWNED, asset_id=asset_id), None
 
-    asset.is_deleted = True
-    asset.save()
+    svc_media_helper_soft_delete(asset)
 
     return ErrorCode(ErrorCode.NO_CONTENT), None
