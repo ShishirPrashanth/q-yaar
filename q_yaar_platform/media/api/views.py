@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from common.constants import UserRolesType
 from common.decorators import validate_profile
 from common.response import get_paginated_response, get_standard_response
-from media.api.serializers import AssetSerializer
+from media.api.serializers import AssetSerializer, PROFILE_CONTEXT_KEY
 from media.services.core import (
     svc_media_confirm_upload,
     svc_media_delete_asset,
@@ -24,8 +24,12 @@ class AssetListView(generics.GenericAPIView):
 
     @validate_profile(logger=logger, allowed_roles=[UserRolesType.PLAYER, UserRolesType.GAME_MASTER])
     def get(self, request, **kwargs):
-        error, assets = svc_media_get_assets(request.query_params, kwargs["profile"])
-        return get_paginated_response(self, error, assets, AssetSerializer)
+        # Unserialized queryset: pagination + serialization happen in
+        # get_paginated_response, which needs the profile via context.
+        error, assets = svc_media_get_assets(kwargs["profile"], serialized=False)
+        return get_paginated_response(
+            self, error, assets, AssetSerializer, context={PROFILE_CONTEXT_KEY: kwargs["profile"]}
+        )
 
     @validate_profile(logger=logger, allowed_roles=[UserRolesType.PLAYER, UserRolesType.GAME_MASTER])
     def post(self, request, **kwargs):

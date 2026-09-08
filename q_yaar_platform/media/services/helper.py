@@ -7,7 +7,7 @@ from minio import Minio
 
 from common.constants import AssetBucketType, AssetStatus
 from common.storage import build_object_key, build_s3_client, delete_object, presign_get_url, presign_put_url
-from media.api.serializers import AssetSerializer
+from media.api.serializers import AssetSerializer, PROFILE_CONTEXT_KEY
 from media.models import Asset, AssetAskedQuestionRelation
 
 from .error_codes import ErrorCode
@@ -118,14 +118,11 @@ def svc_media_helper_get_serialized_assets(assets, profile, many: bool = False):
     logger.debug(f">> ARGS: {locals()}")
 
     # The caller's profile is the uploader for every asset (owner-scoped
-    # queries upstream), so reuse it instead of re-querying per asset.
-    if many:
-        for asset in assets:
-            asset._uploader_profile = profile
-    else:
-        assets._uploader_profile = profile
-
-    return AssetSerializer(assets, many=many).data
+    # queries upstream), so pass it via context instead of re-querying
+    # per asset.
+    return AssetSerializer(
+        assets, many=many, context={PROFILE_CONTEXT_KEY: profile}
+    ).data
 
 
 def svc_media_helper_presign_put_url(object_key: str) -> tuple:

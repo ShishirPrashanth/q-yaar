@@ -6,6 +6,11 @@ from profile_game_master.api.serializers import GameMasterProfileSerializer
 from profile_game_master.models import GameMasterProfile
 from profile_player.api.serializers import PlayerProfileSerializer
 
+# Serializer context key carrying the caller's profile. Set by the
+# service/view layer so get_profile can serialize it without re-querying
+# per asset (queries are owner-scoped to this one profile).
+PROFILE_CONTEXT_KEY = "profile"
+
 
 class AssetSerializer(serializers.ModelSerializer):
     asset_id = serializers.SerializerMethodField()
@@ -29,8 +34,7 @@ class AssetSerializer(serializers.ModelSerializer):
         return str(obj.get_external_id())
 
     def get_profile(self, obj: Asset) -> dict:
-        # Set by the service layer from the request's profile (owner-scoped).
-        profile = obj._uploader_profile
+        profile = self.context[PROFILE_CONTEXT_KEY]
 
         if isinstance(profile, GameMasterProfile):
             return GameMasterProfileSerializer(profile, many=False).data
