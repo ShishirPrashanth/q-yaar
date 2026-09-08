@@ -10,7 +10,6 @@ from game.services.helper import (
     svc_game_helper_get_player_ids_for_teams,
     svc_game_helper_get_team_by_id,
     svc_game_helper_get_teams_for_game,
-    svc_game_helper_verify_game_master_belongs_to_game,
     svc_game_helper_verify_player_belongs_to_game,
     svc_game_helper_verify_player_is_in_team,
 )
@@ -36,12 +35,6 @@ def svc_game_verify_player_belongs_to_game(player: PlayerProfile, game: Game):
     logger.debug(f">> ARGS: {locals()}")
 
     return svc_game_helper_verify_player_belongs_to_game(player=player, game=game)
-
-
-def svc_game_verify_game_master_belongs_to_game(game_master: GameMasterProfile, game: Game):
-    logger.debug(f">> ARGS: {locals()}")
-
-    return svc_game_helper_verify_game_master_belongs_to_game(game_master=game_master, game=game)
 
 
 def svc_game_get_game_by_id(game_id: uuid.UUID):
