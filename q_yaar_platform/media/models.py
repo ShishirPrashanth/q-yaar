@@ -1,6 +1,6 @@
-from django.conf import settings
 from django.db import models
 
+from account.models import PlatformUser
 from common.abstract_models import AbstractExternalFacing, AbstractTimeStamped, AbstractVersioned
 from common.constants import AssetStatus, Length
 
@@ -13,7 +13,7 @@ class Asset(AbstractExternalFacing, AbstractTimeStamped, AbstractVersioned):
     # association is handled by relation tables in the consuming app.
 
     uploaded_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        PlatformUser,
         on_delete=models.CASCADE,
         related_name="media_assets",
     )
